@@ -1,5 +1,6 @@
 package com.ecnu.onion.domain;
 
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,15 +14,17 @@ import java.util.Set;
  */
 @Data
 @Document(collection = "user")
+@Builder
 public class User {
     @Id
     private String email;
-    private String nickname;
+    private String username;
     private String password;
     private boolean disabled;
     private String profileUrl;
     private LocalDateTime registerTime;
     private Set<String> interestedTags;
+    private String activeCode;
 //    private LocalDateTime LastLoginTime;
 //    private List LastIp;
 //    private Integer downloads;

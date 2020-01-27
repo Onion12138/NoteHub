@@ -1,6 +1,7 @@
 package com.ecnu.onion.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.UserInfoDao;
 import com.ecnu.onion.domain.entity.UserInfo;
 import com.ecnu.onion.service.UserService;
@@ -20,8 +21,8 @@ import java.util.List;
  */
 @Service
 @RabbitListener(bindings = {
-        @QueueBinding(value = @Queue(value = "graph_user"),
-                exchange = @Exchange(value = "notehub",type = "fanout"))
+        @QueueBinding(value = @Queue(value = MQConstant.GRAPH_USER_QUEUE),
+                exchange = @Exchange(value = MQConstant.EXCHANGE, type = "topic"))
 })
 public class UserServiceImpl implements UserService {
     @Autowired

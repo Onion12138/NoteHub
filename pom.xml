@@ -23,7 +23,8 @@
 		<module>note-core</module>
         <module>search</module>
 		<module>zuul</module>
-	</modules>
+        <module>mail-service</module>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
