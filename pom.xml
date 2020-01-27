@@ -21,6 +21,8 @@
 		<module>sidecar</module>
 		<module>utils</module>
 		<module>note-core</module>
+        <module>search</module>
+		<module>zuul</module>
 	</modules>
 
 	<properties>

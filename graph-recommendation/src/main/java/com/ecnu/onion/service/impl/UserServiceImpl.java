@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 @RabbitListener(bindings = {
         @QueueBinding(value = @Queue(value = "graph_user"),
-                exchange = @Exchange(value = "notehub"))
+                exchange = @Exchange(value = "notehub",type = "fanout"))
 })
 public class UserServiceImpl implements UserService {
     @Autowired

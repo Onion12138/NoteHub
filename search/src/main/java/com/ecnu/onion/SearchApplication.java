@@ -6,12 +6,13 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * @author onion
- * @date 2020/1/26 -9:35 上午
+ * @date 2020/1/27 -11:07 上午
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-public class NoteApplication {
+public class SearchApplication {
     public static void main(String[] args) {
-        SpringApplication.run(NoteApplication.class, args);
+        SpringApplication.run(SearchApplication.class, args);
     }
 }
+

@@ -1,4 +1,6 @@
 ## NoteHub微服务正式版
+### 架构图
+![avatar](./NoteHub架构图.png)
 ### 模块说明
 > common
 NoteHub公共模块，定义异常、统一返回值 

@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RabbitListener(bindings = {
         @QueueBinding(value = @Queue(value = "graph_note"),
-                exchange = @Exchange(value = "notehub"))
+                exchange = @Exchange(value = "notehub", type = "fanout"))
 })
 public class NoteServiceImpl implements NoteService {
     @Autowired
