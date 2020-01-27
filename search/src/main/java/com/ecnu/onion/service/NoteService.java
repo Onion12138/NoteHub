@@ -9,5 +9,13 @@ import java.util.List;
  * @date 2020/1/27 -11:09 上午
  */
 public interface NoteService {
-    List<Note> findByAuthorEmail(String email);
+    List<Note> findByAuthorEmail(String email, int page);
+
+    List<Note> findByAuthorName(String username, int page);
+
+    List<Note> findByKeyword(String keyword, int page);
+
+    void saveNote(Note note);
+
+    List<Note> findByTag(String tag, int page);
 }

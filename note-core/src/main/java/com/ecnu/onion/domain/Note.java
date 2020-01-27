@@ -34,4 +34,5 @@ public class Note implements Serializable {
     private Integer follows;
     private String content;
     private Integer types;
+    private Boolean valid;
 }

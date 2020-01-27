@@ -10,7 +10,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ServiceEnum {
-    GROUP_CREATE_ERROR(51, "小组至少2个人")
+    GROUP_CREATE_ERROR(51, "小组至少2个人"),
+    PAGE_OVERFLOW(41, "非法的页数")
     ,
     ;
     private Integer code;
