@@ -5,6 +5,7 @@ import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.domain.Note;
 import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -16,6 +17,8 @@ import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +26,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author onion
  * @date 2020/1/27 -11:12 上午
  */
+@Slf4j
 @Service
 @RabbitListener(bindings = {
         @QueueBinding(value = @Queue(value = MQConstant.SEARCH_NOTE_QUEUE),
@@ -51,6 +56,7 @@ public class NoteServiceImpl implements NoteService {
             List<Note> res = new ArrayList<>(hits.length);
             for (SearchHit hit : hits) {
                 res.add(JSON.parseObject(hit.getSourceAsString(), Note.class));
+                log.info("obj:{}", JSON.parseObject(hit.getSourceAsString()));
             }
             return res;
         } catch (Exception e) {
@@ -87,7 +93,33 @@ public class NoteServiceImpl implements NoteService {
         queryBuilder.type(MultiMatchQueryBuilder.Type.MOST_FIELDS);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(queryBuilder).from((page-1)*10).size(10);
-        return performSearchRequest(sourceBuilder);
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title").field("keywords").field("summary");
+        sourceBuilder.highlighter(highlightBuilder);
+        SearchRequest request = new SearchRequest(INDEX);
+        request.source(sourceBuilder);
+        try {
+            SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+            SearchHit[] hits = response.getHits().getHits();
+            List<Note> res = new ArrayList<>(hits.length);
+            for (SearchHit hit : hits) {
+                Note note = JSON.parseObject(hit.getSourceAsString(), Note.class);
+                Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+                if (highlightFields.containsKey("keywords")) {
+                    note.setKeywords(highlightFields.get("keywords").getFragments()[0].toString());
+                }
+                if (highlightFields.containsKey("summary")) {
+                    note.setSummary(highlightFields.get("summary").getFragments()[0].toString());
+                }
+                if (highlightFields.containsKey("title")) {
+                    note.setTitle(highlightFields.get("title").getFragments()[0].toString());
+                }
+                res.add(note);
+            }
+            return res;
+        } catch (Exception e) {
+            throw new CommonServiceException(-1, e.getMessage());
+        }
     }
 
     @Override
