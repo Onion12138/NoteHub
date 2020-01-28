@@ -4,8 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 
-import javax.swing.*;
-
 /**
  * @author onion
  * @date 2020/1/27 -11:27 上午

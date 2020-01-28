@@ -18,14 +18,14 @@ public class BaseResponseVO<T> {
     public static<T> BaseResponseVO<T> success(){
         BaseResponseVO<T> response = new BaseResponseVO<>();
         response.setCode(200);
-        response.setMessage("");
+        response.setMessage("success");
         return response;
     }
 
     public static<T> BaseResponseVO<T> success(T data){
         BaseResponseVO<T> response = new BaseResponseVO<>();
         response.setCode(200);
-        response.setMessage("");
+        response.setMessage("success");
         response.setData(data);
         return response;
     }

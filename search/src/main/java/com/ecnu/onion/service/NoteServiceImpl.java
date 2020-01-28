@@ -21,6 +21,7 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.amqp.rabbit.annotation.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,8 @@ import java.util.Map;
 public class NoteServiceImpl implements NoteService {
     @Autowired
     private RestHighLevelClient restHighLevelClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     private static final String INDEX = "note";
     private void verifyPage(int page) {
         if (page > 10 || page <= 0) {

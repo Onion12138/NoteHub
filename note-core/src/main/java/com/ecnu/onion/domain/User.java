@@ -5,7 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 /**
@@ -20,11 +20,13 @@ public class User {
     private String email;
     private String username;
     private String password;
-    private boolean disabled;
+    private Boolean disabled;
     private String profileUrl;
-    private LocalDateTime registerTime;
+    private LocalDate registerTime;
     private Set<String> interestedTags;
     private String activeCode;
+    private String salt;
+    private Boolean activated;
 //    private LocalDateTime LastLoginTime;
 //    private List LastIp;
 //    private Integer downloads;

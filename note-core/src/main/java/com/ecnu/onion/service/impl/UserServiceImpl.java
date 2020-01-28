@@ -1,10 +1,16 @@
 package com.ecnu.onion.service.impl;
 
 import com.ecnu.onion.constant.MQConstant;
+import com.ecnu.onion.dao.LoginLogDao;
 import com.ecnu.onion.dao.UserDao;
 import com.ecnu.onion.domain.User;
-import com.ecnu.onion.service.MailService;
+import com.ecnu.onion.domain.log.LoginLog;
+import com.ecnu.onion.enums.ServiceEnum;
+import com.ecnu.onion.excpetion.CommonServiceException;
 import com.ecnu.onion.service.UserService;
+import com.ecnu.onion.utils.JwtUtil;
+import com.ecnu.onion.utils.Md5Util;
+import com.ecnu.onion.utils.SaltUtil;
 import com.ecnu.onion.utils.UuidUtil;
 import com.ecnu.onion.vo.LoginVO;
 import com.ecnu.onion.vo.RegisterVO;
@@ -17,6 +23,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author onion
@@ -31,26 +43,26 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
-    private MailService mailService;
-    @Override
-    public void sendEmail(String email) {
-//        String code = CodeUtil.getCode();
-//        redisTemplate.opsForValue().set("code_"+email, code, expireTime, TimeUnit.SECONDS);
-//        String content = "your code is " + code + " , please complete your registration in 10 minutes.";
-//        mailService.sendMail(email,subject,content);
-//        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, "","");
-        String content = "<a href='http://localhost:'>点击激活NoteHub账号</a>";
-    }
+    private LoginLogDao loginLogDao;
 
     @Override
     public void register(RegisterVO registerVO)  {
-        User user = User.builder().email(registerVO.getEmail()).username(registerVO.getUsername()).password(registerVO.getPassword())
-                .disabled(true).activeCode(UuidUtil.getUuid()).build();
+        if (userDao.findById(registerVO.getEmail()).isPresent()) {
+            throw new CommonServiceException(ServiceEnum.EMAIL_IN_USE);
+        }
+        String salt = SaltUtil.getSalt();
+        String password = Md5Util.encrypt(registerVO.getPassword() + salt);
+        User user = User.builder().email(registerVO.getEmail()).username(registerVO.getUsername()).registerTime(LocalDate.now())
+                .password(password).salt(salt).profileUrl("https://avatars2.githubusercontent.com/u/33611404?s=400&v=4")
+                .activated(false).disabled(false).activeCode(UuidUtil.getUuid()).build();
         userDao.save(user);
         String content="<html>\n"+"<body>\n"
                 + "<a href='http://localhost:8080/notehub/noteApi/user/activate?code="+user.getActiveCode()+"'>点击激活NoteHub账号</a>\n"
@@ -62,13 +74,32 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activate(String code) {
         User user = userDao.findByActiveCode(code);
-        user.setDisabled(false);
+        user.setActivated(true);
         userDao.save(user);
     }
 
     @Override
-    public void login(LoginVO loginVO) {
-        log.info("user: {}", userDao.findById(loginVO.getEmail()).get());
+    public Map<String, String> login(LoginVO loginVO) {
+        String email = loginVO.getEmail();
+        Optional<User> optionalUser = userDao.findById(email);
+        if (optionalUser.isEmpty()) {
+            throw new CommonServiceException(ServiceEnum.ACCOUNT_NOT_EXIST);
+        }
+        User user = optionalUser.get();
+        String salt = user.getSalt();
+        String rawPassword = loginVO.getPassword();
+        if (!user.getPassword().equals(Md5Util.encrypt(rawPassword + salt))) {
+            throw new CommonServiceException(ServiceEnum.WRONG_PASSWORD);
+        }
+        LoginLog loginLog = LoginLog.builder().email(user.getEmail()).username(user.getUsername())
+                .loginTime(LocalDateTime.now()).build();
+        loginLogDao.insert(loginLog);
+        Map<String, String> map = new HashMap<>();
+        map.put("token", JwtUtil.createJwt(user));
+        map.put("email",user.getEmail());
+        map.put("username",user.getUsername());
+        map.put("profileUrl",user.getProfileUrl());
+        return map;
     }
 
 

@@ -7,6 +7,8 @@ import com.ecnu.onion.vo.RegisterVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * @author onion
  * @date 2020/1/27 -9:38 上午
@@ -16,12 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     private UserService userService;
-
-    @GetMapping("/sendEmail")
-    public BaseResponseVO sendEmail(@RequestParam String email) {
-        userService.sendEmail(email);
-        return BaseResponseVO.success();
-    }
 
     @PostMapping("/register")
     public BaseResponseVO register(@RequestBody RegisterVO registerVO) {
@@ -37,7 +33,7 @@ public class UserController {
 
     @PostMapping("/login")
     public BaseResponseVO login(@RequestBody LoginVO loginVO){
-        userService.login(loginVO);
-        return BaseResponseVO.success();
+        Map<String, String> map = userService.login(loginVO);
+        return BaseResponseVO.success(map);
     }
 }
