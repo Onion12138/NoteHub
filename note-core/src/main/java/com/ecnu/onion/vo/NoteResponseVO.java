@@ -1,25 +1,18 @@
-package com.ecnu.onion.domain.mongo;
+package com.ecnu.onion.vo;
 
 import com.ecnu.onion.domain.Comment;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author onion
- * @date 2020/1/27 -8:30 上午
+ * @date 2020/1/30 -12:13 下午
  */
 @Data
-@Builder
-@Document(collection = "note")
-public class Note implements Serializable {
-    @Id
+public class NoteResponseVO implements Serializable {
     private String id;
     private String authorEmail;
     private String authorName;
@@ -27,10 +20,6 @@ public class Note implements Serializable {
     private Boolean authority;
     private String forkFrom;
     private LocalDateTime createTime;
-    private Set<String> keywords;
-    private Set<String> languages;
-    private Set<String> levelTitles;
-    private String summary;
     private Integer stars;
     private Integer views;
     private Integer hates;
@@ -38,7 +27,5 @@ public class Note implements Serializable {
     private Integer collects;
     private String content;
     private Boolean valid;
-    private Boolean deleted;
     private List<Comment> comments;
-
 }

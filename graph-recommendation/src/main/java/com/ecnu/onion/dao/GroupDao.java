@@ -1,6 +1,7 @@
 package com.ecnu.onion.dao;
 
 import com.ecnu.onion.domain.entity.Group;
+import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.result.GroupInfoResult;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
@@ -27,12 +28,12 @@ public interface GroupDao extends Neo4jRepository<Group, Long> {
 
     @Query("match (u:user)-[j:join]->(g:group) " +
             "where u.email = {0} and g.groupId = {1} " +
-            "delete u, j, g")
+            "delete j")
     void exitGroup(String email, Long groupId);
 
     @Query("match (u1:user)-[m:manage]->(g:group)<-[j:join]-(u2:user)" +
             "where u1.email = {0} and g.groupId = {1} " +
-            "delete u1, m, g, j, u2")
+            "delete m, g, j")
     void deleteGroup(String email, Long groupId);
 
     @Query("match (g:group),(n:note) " +
@@ -49,4 +50,13 @@ public interface GroupDao extends Neo4jRepository<Group, Long> {
             "where u.email = {0} and g.groupId = {1}" +
             "merge (u)-[:join {joinDate:{2}}]->(g)")
     void joinGroup(String partnerEmail, Long groupId, String joinDate);
+
+    @Query("match (g:group)-[:share]-(n:note) " +
+            "where g.groupId = {0} " +
+            "return n")
+    List<NoteInfo> findGroupNotes(Long groupId);
+
+    @Query("match (g:group) where g.groupId = {0} " +
+            "set g.groupName = {1}")
+    void modifyGroupName(Long groupId, String name);
 }

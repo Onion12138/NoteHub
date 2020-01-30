@@ -1,6 +1,7 @@
 package com.ecnu.onion.controller;
 
 import com.ecnu.onion.VO.GroupRequestVO;
+import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.result.GroupInfoResult;
 import com.ecnu.onion.service.GroupService;
 import com.ecnu.onion.vo.BaseResponseVO;
@@ -14,14 +15,14 @@ import java.util.List;
  * @date 2020/1/23 -5:36 下午
  */
 @RestController
-@RequestMapping("/graph/group")
-public class GroupController {
+@RequestMapping("/group")
+public class  GroupController {
     @Autowired
     private GroupService groupService;
     @PostMapping("/makeGroup")
     public BaseResponseVO makeGroup(@RequestBody GroupRequestVO requestVO) {
-        groupService.makeGroup(requestVO);
-        return BaseResponseVO.success();
+        Long groupId = groupService.makeGroup(requestVO);
+        return BaseResponseVO.success(groupId);
     }
 
     @GetMapping("/myManagedGroups")
@@ -57,6 +58,18 @@ public class GroupController {
     @GetMapping("/share")
     public BaseResponseVO shareNotes(@RequestParam String noteId, @RequestParam Long groupId) {
         groupService.shareNotes(noteId, groupId);
+        return BaseResponseVO.success();
+    }
+
+    @GetMapping("/groupNotes")
+    public BaseResponseVO findGroupNotes(@RequestParam Long groupId) {
+        List<NoteInfo> noteInfos = groupService.findGroupNotes(groupId);
+        return BaseResponseVO.success(noteInfos);
+    }
+
+    @GetMapping("/modifyGroupName")
+    public BaseResponseVO modifyGroupName(@RequestParam Long groupId, @RequestParam String name) {
+        groupService.modifyGroupName(groupId, name);
         return BaseResponseVO.success();
     }
 }

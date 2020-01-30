@@ -1,6 +1,7 @@
 package com.ecnu.onion.service;
 
 import com.ecnu.onion.VO.GroupRequestVO;
+import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.result.GroupInfoResult;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * @date 2020/1/23 -5:37 下午
  */
 public interface GroupService {
-    void makeGroup(GroupRequestVO requestVO);
+    Long makeGroup(GroupRequestVO requestVO);
 
     List<GroupInfoResult> findMyManagedGroups(String email);
 
@@ -23,4 +24,8 @@ public interface GroupService {
     void invitePartner(String email, Long groupId);
 
     void shareNotes(String noteId, Long groupId);
+
+    List<NoteInfo> findGroupNotes(Long groupId);
+
+    void modifyGroupName(Long groupId, String name);
 }

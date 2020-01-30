@@ -16,7 +16,7 @@ import java.util.List;
  * @date 2020/1/23 -5:13 下午
  */
 @RestController
-@RequestMapping("/graph/note")
+@RequestMapping("/note")
 public class NoteController {
     @Autowired
     private NoteService noteService;
@@ -29,9 +29,30 @@ public class NoteController {
 
     @GetMapping("/updateNote")
     public BaseResponseVO updateNote(@RequestParam String oldNoteId,
-                                     @RequestParam String newNoteId) {
-        noteService.updateNote(oldNoteId, newNoteId);
+                                     @RequestParam String newNoteId,
+                                     @RequestParam String title) {
+        noteService.updateNote(oldNoteId, newNoteId, title);
         return BaseResponseVO.success();
     }
+
+    @GetMapping("/jumpToLatest")
+    public BaseResponseVO jumpToLatest(@RequestParam String noteId) {
+        String latest = noteService.jumpToLatest(noteId);
+        return BaseResponseVO.success(latest);
+    }
+
+    @GetMapping("/historyVersion")
+    public BaseResponseVO historyVersion(@RequestParam String noteId) {
+        List<NoteInfo> notes = noteService.historyVersion(noteId);
+        return BaseResponseVO.success(notes);
+    }
+
+    @GetMapping("/rollback")
+    public BaseResponseVO rollback(@RequestParam String currentVersion,
+                                   @RequestParam String rollbackVersion) {
+        noteService.rollback(currentVersion, rollbackVersion);
+        return BaseResponseVO.success();
+    }
+
 
 }

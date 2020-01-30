@@ -1,6 +1,7 @@
 package com.ecnu.onion.service;
 
 import com.ecnu.onion.vo.AnalysisVO;
+import com.ecnu.onion.vo.NoteResponseVO;
 
 import java.util.Map;
 
@@ -10,5 +11,11 @@ import java.util.Map;
  */
 public interface NoteService {
 
-    void publishNote(AnalysisVO analyze, Map<String, String> map);
+    String publishNote(AnalysisVO analyze, Map<String, String> map);
+
+    String updateNote(AnalysisVO analyze, Map<String, String> map);
+
+    void deleteNote(String noteId);
+
+    NoteResponseVO findOneNote(String noteId);
 }

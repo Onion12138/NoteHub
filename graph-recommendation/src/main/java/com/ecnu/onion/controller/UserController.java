@@ -1,5 +1,6 @@
 package com.ecnu.onion.controller;
 
+import com.ecnu.onion.domain.entity.UserInfo;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.vo.BaseResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,15 @@ import java.util.List;
  * @date 2020/1/25 -3:10 下午
  */
 @RestController
-@RequestMapping("/graph/user")
+@RequestMapping("/user")
 public class UserController{
     @Autowired
     private UserService userService;
 
     @GetMapping("/publishNote")
-    public BaseResponseVO addPublishRelation(@RequestParam String email, @RequestParam String noteId) {
-        userService.addPublishRelation(email, noteId);
+    public BaseResponseVO addPublishRelation(@RequestParam String email,
+                                             @RequestParam String noteId, @RequestParam String title) {
+        userService.addPublishRelation(email, noteId, title);
         return BaseResponseVO.success();
     }
 
@@ -62,15 +64,27 @@ public class UserController{
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/myFollowers")
-    public BaseResponseVO findMyFollowers(@RequestParam String email) {
-        List<String> userId = userService.findMyFollowers(email);
+    @GetMapping("/unfollow")
+    public BaseResponseVO cancelFollowRelation(@RequestParam String followerEmail, @RequestParam String followedEmail) {
+        userService.cancelFollowRelation(followerEmail, followedEmail);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/myFollowing")
+    @GetMapping("/myFollowers")
+    public BaseResponseVO findMyFollowers(@RequestParam String email) {
+        List<UserInfo> userId = userService.findMyFollowers(email);
+        return BaseResponseVO.success(userId);
+    }
+
+    @GetMapping("/myFollowings")
     public BaseResponseVO findMyFollowings(@RequestParam String email) {
-        List<String> userId = userService.findMyFollowings(email);
+        List<UserInfo> users = userService.findMyFollowings(email);
+        return BaseResponseVO.success(users);
+    }
+
+    @GetMapping("/addUser")
+    public BaseResponseVO addUser(@RequestParam String email, @RequestParam String username) {
+        userService.addUser(email, username);
         return BaseResponseVO.success();
     }
 }

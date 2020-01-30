@@ -11,5 +11,11 @@ import java.util.List;
 public interface NoteService {
     List<NoteInfo> recommend(String noteId);
 
-    void updateNote(String oldNoteId, String newNoteId);
+    void updateNote(String oldNoteId, String newNoteId, String title);
+
+    String jumpToLatest(String noteId);
+
+    void rollback(String currentVersion, String rollbackVersion);
+
+    List<NoteInfo> historyVersion(String noteId);
 }

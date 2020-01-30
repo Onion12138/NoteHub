@@ -36,8 +36,8 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
 
     @Query("match (u:user),(n:note)" +
             "where u.email = {0} and n.noteId = {1} " +
-            "merge (u)-[d:download {downloadDate:{2}}]->(n)")
-    void addForkRelation(String email, String noteId, String downloadDate);
+            "merge (u)-[d:fork {forkDate:{2}}]->(n)")
+    void addForkRelation(String email, String noteId, String forkDate);
 
     @Query("match (u1:user),(u2:user)" +
             "where u1.email = {0} and u2.email = {1} " +
@@ -46,21 +46,27 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
 
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
             "where u2.email = {0} " +
-            "return u1.email")
-    List<String> findMyFollowers(String email);
+            "return u1")
+    List<UserInfo> findMyFollowers(String email);
 
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
             "where u1.email = {0} " +
-            "return u2.email")
-    List<String> findMyFollowings(String email);
+            "return u2")
+    List<UserInfo> findMyFollowings(String email);
 
     @Query("match (u:user)-[v:view]->(n:note)" +
             "where u.email = {0} and v.viewDate = {1} " +
             "return n")
     List<NoteInfo> findViewedNote(String email, String viewDate);
 
-    @Query("match (u:user),(n:note)" +
-            "where u.email = {0} and n.notedId = {1} " +
-            "merge (u)-[:publish]->(n)")
-    void addPublishRelation(String email, String noteId);
+    @Query("match (u:user)" +
+            "where u.email = {0} " +
+            "create (n:note {noteId:{1},title:{2},publishTime:{3}})" +
+            "merge (u)-[p:publish {publishTime:{3}}]->(n)")
+    void addPublishRelation(String email, String noteId, String title, String publishTime);
+
+    @Query("match (u1:user)-[f:follow]->(u2:user)" +
+            "where u1.email = {0} and u2.email = {1}" +
+            "delete u1, f, u2")
+    void cancelFollowRelation(String followerEmail, String followedEmail);
 }
