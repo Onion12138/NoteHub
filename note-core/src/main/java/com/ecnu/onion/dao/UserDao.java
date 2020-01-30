@@ -1,6 +1,6 @@
 package com.ecnu.onion.dao;
 
-import com.ecnu.onion.domain.User;
+import com.ecnu.onion.domain.mongo.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**

@@ -15,11 +15,13 @@ public interface UserService {
 
     void addHateRelation(String email, String noteId);
 
-    void addDownloadRelation(String email, String noteId);
+    void addForkRelation(String email, String noteId);
 
     void addFollowRelation(String followerEmail, String followedEmail);
 
     List<String> findMyFollowers(String email);
 
     List<String> findMyFollowings(String email);
+
+    void addPublishRelation(String email, String noteId);
 }

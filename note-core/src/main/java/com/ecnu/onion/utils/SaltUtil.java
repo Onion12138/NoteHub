@@ -8,10 +8,18 @@ import java.util.Random;
  */
 public class SaltUtil {
     private static final String SOURCE = "0123456789";
-    public static String getSalt(){
+    public static String getSalt() {
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
         for(int i = 0; i < 10; i++){
+            sb.append(SOURCE.charAt(random.nextInt(10)));
+        }
+        return sb.toString();
+    }
+    public static String getCode() {
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for(int i = 0; i < 6; i++){
             sb.append(SOURCE.charAt(random.nextInt(10)));
         }
         return sb.toString();

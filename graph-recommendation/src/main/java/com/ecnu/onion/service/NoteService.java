@@ -10,4 +10,6 @@ import java.util.List;
  */
 public interface NoteService {
     List<NoteInfo> recommend(String noteId);
+
+    void updateNote(String oldNoteId, String newNoteId);
 }

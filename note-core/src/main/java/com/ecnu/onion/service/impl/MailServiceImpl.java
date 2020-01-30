@@ -80,7 +80,7 @@ public class MailServiceImpl implements MailService {
         String email = messages[1];
         String content = messages[0];
         try {
-            sendHtmlMail(email, "Notehub注册", content, null);
+            sendHtmlMail(email, "这是来自Notehub的确认邮件📧", content, null);
         } catch (MessagingException e) {
             e.printStackTrace();
         }

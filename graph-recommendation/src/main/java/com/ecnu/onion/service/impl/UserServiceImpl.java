@@ -53,8 +53,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addDownloadRelation(String email, String noteId) {
-        userInfoDao.addDownloadRelation(email, noteId, LocalDate.now().toString());
+    public void addForkRelation(String email, String noteId) {
+        userInfoDao.addForkRelation(email, noteId, LocalDate.now().toString());
     }
 
     @Override
@@ -70,6 +70,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<String> findMyFollowings(String email) {
         return userInfoDao.findMyFollowings(email);
+    }
+
+    @Override
+    public void addPublishRelation(String email, String noteId) {
+        userInfoDao.addPublishRelation(email, noteId);
     }
 
 

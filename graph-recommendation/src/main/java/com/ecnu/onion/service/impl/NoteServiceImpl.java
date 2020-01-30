@@ -42,4 +42,9 @@ public class NoteServiceImpl implements NoteService {
         return recommendNotes;
     }
 
+    @Override
+    public void updateNote(String oldNoteId, String newNoteId) {
+        noteInfoDao.updateNote(oldNoteId, newNoteId);
+    }
+
 }

@@ -32,4 +32,9 @@ public interface NoteInfoDao extends Neo4jRepository<NoteInfo, String> {
             "ON CREATE SET r.relateTimes = 1 " +
             "ON MATCH SET r.relateTimes = r.relateTimes + 1")
     void addRelation(String NoteId1, String noteId2);
+
+    @Query("match (n1:note),(n2:note)" +
+            "where n1.noteId = {0} and n2.noteId = {1}" +
+            "merge (n1)-[u:update]->(n2)")
+    void updateNote(String oldNoteId, String newNoteId);
 }

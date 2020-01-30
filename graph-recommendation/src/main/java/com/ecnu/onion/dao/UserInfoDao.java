@@ -37,7 +37,7 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
     @Query("match (u:user),(n:note)" +
             "where u.email = {0} and n.noteId = {1} " +
             "merge (u)-[d:download {downloadDate:{2}}]->(n)")
-    void addDownloadRelation(String email, String noteId, String downloadDate);
+    void addForkRelation(String email, String noteId, String downloadDate);
 
     @Query("match (u1:user),(u2:user)" +
             "where u1.email = {0} and u2.email = {1} " +
@@ -58,4 +58,9 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
             "where u.email = {0} and v.viewDate = {1} " +
             "return n")
     List<NoteInfo> findViewedNote(String email, String viewDate);
+
+    @Query("match (u:user),(n:note)" +
+            "where u.email = {0} and n.notedId = {1} " +
+            "merge (u)-[:publish]->(n)")
+    void addPublishRelation(String email, String noteId);
 }

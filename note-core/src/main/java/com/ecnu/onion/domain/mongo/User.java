@@ -1,4 +1,4 @@
-package com.ecnu.onion.domain;
+package com.ecnu.onion.domain.mongo;
 
 import lombok.Builder;
 import lombok.Data;

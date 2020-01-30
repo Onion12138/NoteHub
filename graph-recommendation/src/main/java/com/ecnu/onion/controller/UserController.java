@@ -1,6 +1,5 @@
 package com.ecnu.onion.controller;
 
-import com.ecnu.onion.domain.entity.UserInfo;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.vo.BaseResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,12 @@ import java.util.List;
 public class UserController{
     @Autowired
     private UserService userService;
+
+    @GetMapping("/publishNote")
+    public BaseResponseVO addPublishRelation(@RequestParam String email, @RequestParam String noteId) {
+        userService.addPublishRelation(email, noteId);
+        return BaseResponseVO.success();
+    }
 
     @GetMapping("/viewNote")
     public BaseResponseVO addViewRelation(@RequestParam String email, @RequestParam String noteId) {
@@ -45,9 +50,9 @@ public class UserController{
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/downloadNote")
-    public BaseResponseVO addDownloadRelation(@RequestParam String email, @RequestParam String noteId) {
-        userService.addDownloadRelation(email, noteId);
+    @GetMapping("/forkNote")
+    public BaseResponseVO addForkRelation(@RequestParam String email, @RequestParam String noteId) {
+        userService.addForkRelation(email, noteId);
         return BaseResponseVO.success();
     }
 

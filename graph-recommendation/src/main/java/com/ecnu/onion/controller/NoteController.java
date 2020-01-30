@@ -27,4 +27,11 @@ public class NoteController {
         return BaseResponseVO.success(noteInfos);
     }
 
+    @GetMapping("/updateNote")
+    public BaseResponseVO updateNote(@RequestParam String oldNoteId,
+                                     @RequestParam String newNoteId) {
+        noteService.updateNote(oldNoteId, newNoteId);
+        return BaseResponseVO.success();
+    }
+
 }

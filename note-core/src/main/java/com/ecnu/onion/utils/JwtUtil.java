@@ -1,6 +1,6 @@
 package com.ecnu.onion.utils;
 
-import com.ecnu.onion.domain.User;
+import com.ecnu.onion.domain.mongo.User;
 import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
 import io.jsonwebtoken.Claims;
