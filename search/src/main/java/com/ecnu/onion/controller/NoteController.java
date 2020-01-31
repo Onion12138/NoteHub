@@ -16,10 +16,6 @@ import java.util.List;
 public class NoteController {
     @Autowired
     private NoteService noteService;
-    @GetMapping("/test")
-    public BaseResponseVO test() {
-        return BaseResponseVO.success("test");
-    }
     @GetMapping("/byEmail")
     public BaseResponseVO searchByAuthorEmail(@RequestParam String email, @RequestParam(defaultValue = "1")Integer page) {
         List<Note> notes = noteService.findByAuthorEmail(email, page);
@@ -40,9 +36,9 @@ public class NoteController {
         List<Note> notes = noteService.findByTag(tag, page);
         return BaseResponseVO.success(notes);
     }
-    @PostMapping("/save")
-    public BaseResponseVO saveNote(@RequestBody Note note) {
-        noteService.saveNote(note);
+    @GetMapping("/delete")
+    public BaseResponseVO deleteNote(@RequestParam String noteId) {
+        noteService.deleteNote(noteId);
         return BaseResponseVO.success();
     }
 }

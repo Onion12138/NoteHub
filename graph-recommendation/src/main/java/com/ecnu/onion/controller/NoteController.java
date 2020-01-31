@@ -54,5 +54,10 @@ public class NoteController {
         return BaseResponseVO.success();
     }
 
+    @GetMapping("/deleteNote")
+    public BaseResponseVO deleteNote(@RequestParam String noteId) {
+        noteService.deleteNote(noteId);
+        return BaseResponseVO.success();
+    }
 
 }

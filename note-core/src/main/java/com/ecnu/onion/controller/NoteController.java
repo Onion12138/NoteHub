@@ -1,6 +1,5 @@
 package com.ecnu.onion.controller;
 
-import com.ecnu.onion.api.AnalyzeAPI;
 import com.ecnu.onion.service.NoteService;
 import com.ecnu.onion.vo.AnalysisVO;
 import com.ecnu.onion.vo.BaseResponseVO;
@@ -27,8 +26,6 @@ public class NoteController {
     RestTemplate restTemplate;
     @Autowired
     private NoteService noteService;
-    @Autowired
-    private AnalyzeAPI analyzeAPI;
     @PostMapping("/publish")
     public BaseResponseVO publishNote(@RequestParam Map<String, String> map) {
         log.info("{}",map.get("content"));

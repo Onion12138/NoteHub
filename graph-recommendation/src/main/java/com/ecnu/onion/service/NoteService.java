@@ -18,4 +18,6 @@ public interface NoteService {
     void rollback(String currentVersion, String rollbackVersion);
 
     List<NoteInfo> historyVersion(String noteId);
+
+    void deleteNote(String noteId);
 }

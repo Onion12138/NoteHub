@@ -15,7 +15,7 @@ public interface NoteService {
 
     List<Note> findByKeyword(String keyword, int page);
 
-    void saveNote(Note note);
-
     List<Note> findByTag(String tag, int page);
+
+    void deleteNote(String noteId);
 }

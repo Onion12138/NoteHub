@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author onion
@@ -23,22 +22,22 @@ public class Note implements Serializable {
     private String id;
     private String authorEmail;
     private String authorName;
-    private String title;
+    private List<String> title;
     private Boolean authority;
     private String forkFrom;
-    private LocalDateTime createTime;
-    private Set<String> keywords;
-    private Set<String> languages;
-    private Set<String> levelTitles;
-    private String summary;
+    private List<LocalDateTime> createTime;
+    private List<String> keywords;
+    private List<String> languages;
+    private List<String> levelTitles;
+    private List<String> summary;
     private Integer stars;
     private Integer views;
     private Integer hates;
     private Integer forks;
     private Integer collects;
-    private String content;
+    private Integer version;
+    private List<String> content;
     private Boolean valid;
-    private Boolean deleted;
     private List<Comment> comments;
 
 }

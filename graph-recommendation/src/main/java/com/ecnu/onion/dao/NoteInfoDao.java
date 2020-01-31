@@ -40,7 +40,7 @@ public interface NoteInfoDao extends Neo4jRepository<NoteInfo, String> {
             "merge (n1)-[up:update {updateTime:{3}}]->(n2)")
     void updateNote(String oldNoteId, String newNoteId, String title, String publishTime);
 
-    @Query("match (n1:note)-[:update*]-(n2:note)" +
+    @Query("match (n1:note)-[:update*0..]-(n2:note)" +
             "where n1.noteId = {1} and ()-[:publish]->(n2)" +
             "return n2.noteId")
     String jumpToLatest(String noteId);
@@ -55,4 +55,9 @@ public interface NoteInfoDao extends Neo4jRepository<NoteInfo, String> {
             "where n1.id = {0} " +
             "return n2")
     List<NoteInfo> historyVersion(String noteId);
+
+    @Query("match (:user)-[p:publish]-(n:note)" +
+            "where n.noteId = {0} " +
+            "delete p")
+    void deleteNote(String noteId);
 }

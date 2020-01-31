@@ -6,6 +6,8 @@ import com.ecnu.onion.domain.Note;
 import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -21,10 +23,10 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.amqp.rabbit.annotation.*;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +44,6 @@ import java.util.Map;
 public class NoteServiceImpl implements NoteService {
     @Autowired
     private RestHighLevelClient restHighLevelClient;
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
     private static final String INDEX = "note";
     private void verifyPage(int page) {
         if (page > 10 || page <= 0) {
@@ -135,20 +135,8 @@ public class NoteServiceImpl implements NoteService {
         return performSearchRequest(sourceBuilder);
     }
 
-    @Override
-    public void saveNote(Note note) {
-        IndexRequest request = new IndexRequest(INDEX);
-        request.id(note.getId());
-        request.source(JSON.toJSONString(note), XContentType.JSON);
-        try {
-            restHighLevelClient.index(request, RequestOptions.DEFAULT);
-        } catch (Exception e) {
-            throw new CommonServiceException(-1, e.getMessage());
-        }
-    }
-
     @RabbitHandler
-    private void synchronizeNote(String message) {
+    private void addNote(String message) {
         Note note = JSON.parseObject(message, Note.class);
         IndexRequest request = new IndexRequest(INDEX);
         request.id(note.getId());
@@ -159,4 +147,18 @@ public class NoteServiceImpl implements NoteService {
             throw new CommonServiceException(-1, e.getMessage());
         }
     }
+
+    @Override
+    public void deleteNote(String noteId) {
+        DeleteRequest request = new DeleteRequest(INDEX);
+        request.id(noteId);
+        DeleteResponse response = null;
+        try {
+            response = restHighLevelClient.delete(request,RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("delete response: {}", response);
+    }
+
 }

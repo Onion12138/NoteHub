@@ -49,4 +49,9 @@ public class NoteServiceImpl implements NoteService {
         return noteInfoDao.historyVersion(noteId);
     }
 
+    @Override
+    public void deleteNote(String noteId) {
+        noteInfoDao.deleteNote(noteId);
+    }
+
 }
