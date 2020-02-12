@@ -1,0 +1,10 @@
+server:
+  port: 8672
+
+spring:
+  application:
+    name: notehub-message
+  data:
+    mongodb:
+      port: 27017
+      host: 120.77.176.55
