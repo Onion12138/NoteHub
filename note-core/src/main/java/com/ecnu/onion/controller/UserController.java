@@ -1,12 +1,19 @@
 package com.ecnu.onion.controller;
 
+import com.ecnu.onion.domain.CollectNote;
+import com.ecnu.onion.domain.MindMap;
 import com.ecnu.onion.service.UserService;
-import com.ecnu.onion.vo.*;
+import com.ecnu.onion.utils.AuthUtil;
+import com.ecnu.onion.vo.BaseResponseVO;
+import com.ecnu.onion.vo.LoginVO;
+import com.ecnu.onion.vo.ModificationVO;
+import com.ecnu.onion.vo.RegisterVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author onion
@@ -24,7 +31,7 @@ public class UserController {
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/activate")
+    @PostMapping("/activate")
     public BaseResponseVO activate(@RequestParam String code) {
         userService.activate(code);
         return BaseResponseVO.success();
@@ -32,33 +39,77 @@ public class UserController {
 
     @PostMapping("/login")
     public BaseResponseVO login(@RequestBody LoginVO loginVO){
-        Map<String, String> map = userService.login(loginVO);
+        Map<String, Object> map = userService.login(loginVO);
         return BaseResponseVO.success(map);
     }
 
-    @GetMapping("/uploadProfile")
-    public BaseResponseVO uploadProfile(@RequestParam String email, @RequestParam MultipartFile file) {
-        //可能从token中获取email
+    @PostMapping("/uploadProfile")
+    public BaseResponseVO uploadProfile(@RequestParam MultipartFile file) {
+        String email = AuthUtil.getEmail();
         String url = userService.uploadProfile(email, file);
         return BaseResponseVO.success(url);
     }
 
     @GetMapping("/sendCode")
-    public BaseResponseVO sendCode(@RequestParam String email) {
+    public BaseResponseVO sendCode() {
+        String email = AuthUtil.getEmail();
         userService.sendCode(email);
         return BaseResponseVO.success();
     }
 
     @PostMapping("/modifyPassword")
     public BaseResponseVO modifyPassword(@RequestBody ModificationVO modificationVO) {
-        userService.modifyPassword(modificationVO);
+        String email = AuthUtil.getEmail();
+        userService.modifyPassword(email, modificationVO);
         return BaseResponseVO.success();
     }
 
-    //我并不想提供这个接口，懒得数据同步
-    @GetMapping("/modifyUsername")
-    public BaseResponseVO modifyUsername(@RequestParam String email, @RequestParam String username) {
-        userService.modifyUsername(email, username);
+    @PostMapping("/collectNote")
+    public BaseResponseVO collectNote(@RequestBody CollectNote collectNote){
+        String email = AuthUtil.getEmail();
+        userService.collectNote(email, collectNote);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/chooseTags")
+    public BaseResponseVO chooseTags(@RequestParam Set<String> tags) {
+        String email = AuthUtil.getEmail();
+        userService.chooseTags(email, tags);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/cancelCollectNote")
+    public BaseResponseVO cancelCollectNote(@RequestParam String noteId) {
+        String email = AuthUtil.getEmail();
+        userService.cancelCollectNote(email, noteId);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/addIndex")
+    public BaseResponseVO addIndex(@RequestParam String mindMap) {
+        String email = AuthUtil.getEmail();
+        userService.addIndex(email, mindMap);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/updateIndex")
+    public BaseResponseVO updateIndex(@RequestParam Map<String,String> map) {
+        String email = AuthUtil.getEmail();
+        userService.updateIndex(email, map);
+        return BaseResponseVO.success();
+    }
+
+    @GetMapping("/findOneIndex")
+    public BaseResponseVO findOneIndex(@RequestParam Integer num) {
+        String email = AuthUtil.getEmail();
+        MindMap mindMap = userService.findOneIndex(email, num);
+        return BaseResponseVO.success(mindMap);
+    }
+
+    @PostMapping("/deleteIndex")
+    public BaseResponseVO deleteIndex(@RequestParam Integer num) {
+        String email = AuthUtil.getEmail();
+        userService.deleteIndex(email, num);
         return BaseResponseVO.success();
     }
 }

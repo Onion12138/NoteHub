@@ -1,9 +1,12 @@
 package com.ecnu.onion.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.UserInfoDao;
 import com.ecnu.onion.domain.entity.UserInfo;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.task.NoteRelationTask;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,10 @@ import java.util.List;
  * @date 2020/1/25 -3:31 下午
  */
 @Service
+@RabbitListener(bindings = {
+        @QueueBinding(value = @Queue(value = MQConstant.GRAPH_USER_QUEUE),
+                exchange = @Exchange(value = MQConstant.EXCHANGE, type = "topic"))
+})
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserInfoDao userInfoDao;
@@ -65,18 +72,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addPublishRelation(String email, String noteId, String title) {
-        userInfoDao.addPublishRelation(email, noteId, title, LocalDate.now().toString());
-    }
-
-    @Override
     public void cancelFollowRelation(String followerEmail, String followedEmail) {
         userInfoDao.cancelFollowRelation(followerEmail, followedEmail);
     }
 
-    @Override
-    public void addUser(String email, String username) {
-        UserInfo userInfo = UserInfo.builder().email(email).username(username).build();
+    @RabbitHandler
+    private void addUser(String message) {
+        UserInfo userInfo = JSON.parseObject(message, UserInfo.class);
         userInfoDao.save(userInfo);
     }
 

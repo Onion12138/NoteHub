@@ -8,8 +8,10 @@ import lombok.Data;
  */
 @Data
 public class Comment {
+    private String noteId;
+    private String commentId;
     private String email;
     private String username;
-    private String comment;
+    private String content;
     private String replyTo;
 }

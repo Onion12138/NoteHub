@@ -1,9 +1,6 @@
 package com.ecnu.onion.utils;
 
 import com.ecnu.onion.domain.mongo.User;
-import com.ecnu.onion.enums.ServiceEnum;
-import com.ecnu.onion.excpetion.CommonServiceException;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,12 +22,5 @@ public class JwtUtil {
                 .signWith(SignatureAlgorithm.HS256, KEY)
                 .setExpiration(new Date(now + ttl));
         return builder.compact();
-    }
-    public static Claims parseJwt(String jwtStr){
-        try{
-            return Jwts.parser().setSigningKey(KEY).parseClaimsJws(jwtStr).getBody();
-        }catch (Exception e){
-            throw new CommonServiceException(ServiceEnum.INVALID_TOKEN);
-        }
     }
 }

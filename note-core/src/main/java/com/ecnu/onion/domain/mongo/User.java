@@ -1,11 +1,14 @@
 package com.ecnu.onion.domain.mongo;
 
+import com.ecnu.onion.domain.CollectNote;
+import com.ecnu.onion.domain.MindMap;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,16 +30,6 @@ public class User {
     private String activeCode;
     private String salt;
     private Boolean activated;
-//    private LocalDateTime LastLoginTime;
-//    private List LastIp;
-//    private Integer downloads;
-//    private Integer collects;
-//    private Integer publishes;
-//    private Integer role;
-//    private Set<String> publishNoteId;
-//    private Set<String> followNoteId;
-//    private Set<String> downloadNoteId;
-
-
-
+    private Set<CollectNote> collectNotes;
+    private List<MindMap> collectIndexes;
 }

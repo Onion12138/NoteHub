@@ -27,33 +27,6 @@ public class NoteController {
         return BaseResponseVO.success(noteInfos);
     }
 
-    @GetMapping("/updateNote")
-    public BaseResponseVO updateNote(@RequestParam String oldNoteId,
-                                     @RequestParam String newNoteId,
-                                     @RequestParam String title) {
-        noteService.updateNote(oldNoteId, newNoteId, title);
-        return BaseResponseVO.success();
-    }
-
-    @GetMapping("/jumpToLatest")
-    public BaseResponseVO jumpToLatest(@RequestParam String noteId) {
-        String latest = noteService.jumpToLatest(noteId);
-        return BaseResponseVO.success(latest);
-    }
-
-    @GetMapping("/historyVersion")
-    public BaseResponseVO historyVersion(@RequestParam String noteId) {
-        List<NoteInfo> notes = noteService.historyVersion(noteId);
-        return BaseResponseVO.success(notes);
-    }
-
-    @GetMapping("/rollback")
-    public BaseResponseVO rollback(@RequestParam String currentVersion,
-                                   @RequestParam String rollbackVersion) {
-        noteService.rollback(currentVersion, rollbackVersion);
-        return BaseResponseVO.success();
-    }
-
     @GetMapping("/deleteNote")
     public BaseResponseVO deleteNote(@RequestParam String noteId) {
         noteService.deleteNote(noteId);

@@ -25,9 +25,6 @@ public interface UserService {
 
     List<UserInfo> findMyFollowings(String email);
 
-    void addPublishRelation(String email, String noteId, String title);
-
     void cancelFollowRelation(String followerEmail, String followedEmail);
 
-    void addUser(String email, String username);
 }

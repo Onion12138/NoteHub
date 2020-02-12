@@ -11,7 +11,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ModificationVO extends BaseRequestVO {
-    private String email;
     private String code;
     private String password;
     @Override

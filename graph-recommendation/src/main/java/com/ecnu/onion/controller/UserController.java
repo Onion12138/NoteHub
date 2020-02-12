@@ -21,12 +21,6 @@ public class UserController{
     @Autowired
     private UserService userService;
 
-    @GetMapping("/publishNote")
-    public BaseResponseVO addPublishRelation(@RequestParam String email,
-                                             @RequestParam String noteId, @RequestParam String title) {
-        userService.addPublishRelation(email, noteId, title);
-        return BaseResponseVO.success();
-    }
 
     @GetMapping("/viewNote")
     public BaseResponseVO addViewRelation(@RequestParam String email, @RequestParam String noteId) {
@@ -82,9 +76,4 @@ public class UserController{
         return BaseResponseVO.success(users);
     }
 
-    @GetMapping("/addUser")
-    public BaseResponseVO addUser(@RequestParam String email, @RequestParam String username) {
-        userService.addUser(email, username);
-        return BaseResponseVO.success();
-    }
 }

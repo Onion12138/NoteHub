@@ -11,18 +11,18 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(value = "graph-recommendation")
 public interface GraphAPI {
-    @GetMapping("/note/updateNote")
-    BaseResponseVO updateNote(@RequestParam String oldNoteId, @RequestParam String newNoteId);
     @GetMapping("/note/deleteNote")
     BaseResponseVO deleteNote(@RequestParam String noteId);
-    @GetMapping("/note/jumpToLatest")
-    BaseResponseVO jumpToLatest(@RequestParam String noteId);
+
     @GetMapping("/user/forkNote")
     BaseResponseVO addForkRelation(@RequestParam String email, @RequestParam String noteId);
-    @GetMapping("/publishNote")
-    BaseResponseVO addPublishRelation(@RequestParam String email,
-                                      @RequestParam String noteId, @RequestParam String title);
 
-    @GetMapping("/viewNote")
+    @GetMapping("/user/viewNote")
     BaseResponseVO addViewRelation(@RequestParam String email, @RequestParam String noteId);
+
+    @GetMapping("/user/starNote")
+    BaseResponseVO addStarRelation(@RequestParam String email, @RequestParam String noteId);
+
+    @GetMapping("/user/hateNote")
+    BaseResponseVO addHateRelation(@RequestParam String email, @RequestParam String noteId);
 }

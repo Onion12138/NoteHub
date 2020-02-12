@@ -22,21 +22,22 @@ public class Note implements Serializable {
     private String id;
     private String authorEmail;
     private String authorName;
-    private List<String> title;
+    private String title;
     private Boolean authority;
     private String forkFrom;
     private List<LocalDateTime> createTime;
+    private List<String> tag;
+    private List<String> titles;
     private List<String> keywords;
-    private List<String> languages;
     private List<String> levelTitles;
     private List<String> summary;
+    private List<String> content;
     private Integer stars;
     private Integer views;
     private Integer hates;
     private Integer forks;
     private Integer collects;
     private Integer version;
-    private List<String> content;
     private Boolean valid;
     private List<Comment> comments;
 

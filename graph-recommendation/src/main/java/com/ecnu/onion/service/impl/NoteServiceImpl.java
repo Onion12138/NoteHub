@@ -1,12 +1,14 @@
 package com.ecnu.onion.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.NoteInfoDao;
 import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.service.NoteService;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,10 @@ import java.util.List;
  * @date 2020/1/23 -5:13 下午
  */
 @Service
+@RabbitListener(bindings = {
+        @QueueBinding(value = @Queue(value = MQConstant.SEARCH_NOTE_QUEUE),
+                exchange = @Exchange(value = MQConstant.EXCHANGE, type = "topic"))
+})
 public class NoteServiceImpl implements NoteService {
     @Autowired
     private NoteInfoDao noteInfoDao;
@@ -30,28 +36,14 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public void updateNote(String oldNoteId, String newNoteId, String title) {
-        noteInfoDao.updateNote(oldNoteId, newNoteId, title, LocalDate.now().toString());
-    }
-
-    @Override
-    public String jumpToLatest(String noteId) {
-        return noteInfoDao.jumpToLatest(noteId);
-    }
-
-    @Override
-    public void rollback(String currentVersion, String rollbackVersion) {
-        noteInfoDao.rollback(currentVersion, rollbackVersion, LocalDate.now().toString());
-    }
-
-    @Override
-    public List<NoteInfo> historyVersion(String noteId) {
-        return noteInfoDao.historyVersion(noteId);
-    }
-
-    @Override
     public void deleteNote(String noteId) {
         noteInfoDao.deleteNote(noteId);
+    }
+
+    @RabbitHandler
+    private void addNote(String message) {
+        NoteInfo noteInfo = JSON.parseObject(message, NoteInfo.class);
+        noteInfoDao.save(noteInfo);
     }
 
 }
