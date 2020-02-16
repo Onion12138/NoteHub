@@ -86,7 +86,7 @@ def construct_title(extracted_titles):
         t = Menu(len(title.split(" ")[0]), title.split(" ")[1])
         last[t.level] = t
         ll = t.level-1
-        while last[ll] is None:
+        while last.get(ll) is None:
             ll -= 1
         last[ll].add_children(t)
     return head
