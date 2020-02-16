@@ -3,15 +3,15 @@ import re
 import jieba
 from jieba.analyse import *
 from textrank4zh import TextRank4Sentence
-import extract_title
+import extract_title_and_content
 app = Flask(__name__)
 
 @app.route("/analyze")
 def analyze():
     text = request.form.get("text")
-    level_titles, languages, processed_str = extract_title.do_extract(text)
-    keywords = extract_keyword(processed_str)
-    summary = summarize(processed_str)
+    level_titles, content = extract_title_and_content.do_extract(text)
+    keywords = extract_keyword(content)
+    summary = summarize(content)
     data = {
         "summary": summary,
         "keywords": keywords,
