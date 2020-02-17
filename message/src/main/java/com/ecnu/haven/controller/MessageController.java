@@ -9,13 +9,14 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 /**
  * @author HavenTong
  * @date 2020/2/14 7:46 下午
  */
 @RestController
-@RequestMapping("/message")
 public class MessageController {
 
     @Autowired
@@ -32,39 +33,34 @@ public class MessageController {
         return BaseResponseVO.success();
     }
 
+    @PostMapping("/multiStatus")
+    public BaseResponseVO changeMultiStatus(@RequestParam List<String> messageIds,
+                                            @RequestParam String type) {
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/allRead")
+    public BaseResponseVO changeAllToRead() {
+        return BaseResponseVO.success();
+    }
+
     @PostMapping("/delete")
     public BaseResponseVO delete(@RequestParam String messageId) {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/group/create")
-    public BaseResponseVO pushCreateGroupMessage(@RequestBody MessageRequestVO messageRequest) {
+    @PostMapping("/deleteMulti")
+    public BaseResponseVO deleteMulti(@RequestParam List<String> messageIds) {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/group/shareNote")
-    public BaseResponseVO pushShareNoteMessage(@RequestParam String sharedBy,
-                                               @RequestBody MessageRequestVO messageRequest) {
+    @PostMapping("/deleteAll")
+    public BaseResponseVO deleteAll() {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/user/comment")
-    public BaseResponseVO pushCommentMessage(@RequestParam String senderName,
-                                             @RequestParam String authorEmail,
-                                             @RequestParam String title) {
-        return BaseResponseVO.success();
-    }
-
-    @PostMapping("/user/reply")
-    public BaseResponseVO pushReplyMessage(@RequestParam String senderName,
-                                           @RequestParam String receiverEmail,
-                                           @RequestParam String title) {
-        return BaseResponseVO.success();
-    }
-
-    @PostMapping("/user/notifyUpdate")
-    public BaseResponseVO pushNoteUpdateMessage(@RequestParam String type,
-                                                @RequestBody MessageRequestVO messageRequest) {
+    @PostMapping("/post")
+    public BaseResponseVO post(@RequestBody MessageRequestVO messageRequest) {
         return BaseResponseVO.success();
     }
 }

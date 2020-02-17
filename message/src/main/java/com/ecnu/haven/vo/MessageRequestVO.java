@@ -1,5 +1,6 @@
 package com.ecnu.haven.vo;
 
+import com.ecnu.haven.enums.MessageType;
 import com.ecnu.onion.excpetion.CommonServiceException;
 import com.ecnu.onion.vo.BaseRequestVO;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,8 @@ public class MessageRequestVO extends BaseRequestVO {
     private String senderId;
     private String senderName;
     private List<String> receiverEmails;
-    private String title;
+    private String content;
+    private MessageType type;
     @Override
     public void checkParams() throws CommonServiceException {
 
