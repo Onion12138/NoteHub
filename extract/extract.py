@@ -1,24 +1,27 @@
 from flask import Flask, jsonify, request
-import re
-import jieba
-from jieba.analyse import *
-from textrank4zh import TextRank4Sentence
-import extract_title_and_content
+import extract_title_content_keywords
+import judge_if_trash
+
 app = Flask(__name__)
 
-@app.route("/analyze")
+
+@app.route("/analyze", methods=['POST'])
 def analyze():
-    text = request.form.get("text")
-    level_titles, content = extract_title_and_content.do_extract(text)
-    keywords = extract_keyword(content)
-    summary = summarize(content)
+    note = request.form.get("note")
+    if note is None or note is "":
+        return error()
+    level_titles, titles, content, keywords, summary = extract_title_content_keywords.do_extract(note)
+    if judge_if_trash.predict(content) is False:
+        return error()
     data = {
         "summary": summary,
+        "titles": titles,
         "keywords": keywords,
-        "titles": level_titles,
-        "tags": "test"  # to complete
+        "level_titles": level_titles,
+        "tags": ""  # to complete
     }
-    return jsonify(data)
+    return success(data)
+
 
 @app.route("/health")
 def health():
@@ -27,38 +30,22 @@ def health():
     }
     return jsonify(data)
 
-def summarize(processed_str):
-    tr4s = TextRank4Sentence()
-    tr4s.analyze(text=processed_str, lower=True, source = 'no_stop_words')
-    key_sentences = tr4s.get_key_sentences(num=10, sentence_min_len=2)
-    return key_sentences
+
+def success(data):
+    result = {
+        "code": 0,
+        "msg": "success",
+        "data": data
+    }
+    return jsonify(result)
 
 
-def extract_keyword(processed_str):
-    keyword = {}
-    tags = extract_tags(processed_str, topK=20, withWeight=True)
-    rank = textrank(processed_str, topK=20, withWeight=True)
-    max_tag = tags[0][1]
-    min_tag = tags[-1][1]
-    max_rank = rank[0][1]
-    min_rank = rank[-1][1]
-    for k, w in tags:
-        if max_tag != min_tag:
-            keyword[k] = (w-min_tag)/(max_tag-min_tag)
-        else:
-            keyword[k] = 0
-    for k, w in rank:
-        if max_rank != min_rank:
-            if k in keyword.keys():
-                keyword[k] += (w-min_rank)/(max_rank-min_rank)
-            else:
-                keyword[k] = (w-min_rank)/(max_rank-min_rank)
-        else:
-            if k in keyword.keys():
-                keyword[k] += 0
-            else:
-                keyword[k] = 0
-    return sorted(keyword.items(),key=lambda x:-x[1])[:10]
+def error():
+    result = {
+        "code": -1,
+        "msg": "内容不存在或违规！"
+    }
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run('0.0.0.0')
