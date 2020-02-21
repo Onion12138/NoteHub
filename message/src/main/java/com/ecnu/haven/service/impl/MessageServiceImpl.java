@@ -3,11 +3,14 @@ package com.ecnu.haven.service.impl;
 import com.ecnu.haven.dao.MessageDao;
 import com.ecnu.haven.domain.Message;
 import com.ecnu.haven.service.MessageService;
+import com.ecnu.haven.socket.WebSocket;
 import com.ecnu.haven.util.FormatUtil;
 import com.ecnu.haven.util.HeaderUtil;
 import com.ecnu.haven.util.KeyUtil;
 import com.ecnu.haven.vo.MessageRequestVO;
 import com.ecnu.haven.vo.MessageResponseVO;
+import com.ecnu.onion.vo.BaseRequestVO;
+import com.ecnu.onion.vo.BaseResponseVO;
 import com.mongodb.WriteResult;
 import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,9 @@ import java.util.List;
 @Service
 @Slf4j
 public class MessageServiceImpl implements MessageService {
+
+    @Autowired
+    private WebSocket webSocket;
 
     @Autowired
     private MessageDao messageDao;
@@ -113,7 +119,60 @@ public class MessageServiceImpl implements MessageService {
         log.info("deleted: {}", result.getModifiedCount());
     }
 
+
+    @Override
+    public void deleteMulti(List<String> messageIds) {
+        String email = HeaderUtil.getEmail();
+        Query query = new Query(Criteria.where("userEmail").is(email)
+                .and("messageId").in(messageIds));
+        Update update = new Update().set("isDeleted", true);
+        UpdateResult result = mongoTemplate.updateMulti(query, update, Message.class);
+        log.info("deleted: {}", result.getModifiedCount());
+    }
+
     // TODO: following service
+
+    @Override
+    public void deleteAll() {
+        String email = HeaderUtil.getEmail();
+        Query query = new Query(Criteria.where("userEmail").is(email));
+        Update update = new Update().set("isDeleted", true);
+        UpdateResult result = mongoTemplate.updateMulti(query, update, Message.class);
+        log.info("deleted: {}", result.getModifiedCount());
+    }
+
+    @Override
+    public void post(MessageRequestVO messageRequestVO) {
+        List<String> receiverEmails = messageRequestVO.getReceiverEmails();
+        List<Message> messages = new ArrayList<>();
+        for (String email : receiverEmails) {
+            String messageId = KeyUtil.getUniqueKey();
+            LocalDateTime current = LocalDateTime.now();
+            MessageResponseVO responseVO = MessageResponseVO.builder()
+                    .messageId(messageId)
+                    .content(messageRequestVO.getContent())
+                    .senderName(messageRequestVO.getSenderName())
+                    .type(messageRequestVO.getType())
+                    .isRead(false)
+                    .createdAt(FormatUtil.format(current))
+                    .build();
+            webSocket.sendMessage(email, BaseResponseVO.success(responseVO));
+            Message message = Message.builder()
+                    .messageId(messageId)
+                    .userEmail(email)
+                    .type(messageRequestVO.getType())
+                    .content(messageRequestVO.getContent())
+                    .senderName(messageRequestVO.getSenderName())
+                    .senderId(messageRequestVO.getSenderId())
+                    .isRead(false)
+                    .isDeleted(false)
+                    .createdAt(current)
+                    .build();
+            messages.add(message);
+        }
+        List<Message> savedMessages = messageDao.saveAll(messages);
+        log.info("saved: {}", savedMessages);
+    }
 
     @Override
     public void saveMessage(MessageRequestVO messageRequestVO) {
