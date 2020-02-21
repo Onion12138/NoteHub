@@ -24,9 +24,6 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    @Autowired
-    private WebSocket webSocket;
-
     @GetMapping("/all")
     public BaseResponseVO getAllMessages() {
         List<MessageResponseVO> responseVOList = messageService.findAllMessages();
@@ -60,23 +57,31 @@ public class MessageController {
         return BaseResponseVO.success();
     }
 
-    // TODO: following
 
     @PostMapping("/deleteMulti")
     public BaseResponseVO deleteMulti(@RequestParam List<String> messageIds) {
+        messageService.deleteMulti(messageIds);
         return BaseResponseVO.success();
     }
 
     @PostMapping("/deleteAll")
     public BaseResponseVO deleteAll() {
+        messageService.deleteAll();
         return BaseResponseVO.success();
     }
 
     @PostMapping("/post")
     public BaseResponseVO post(@RequestBody MessageRequestVO messageRequest) {
+        messageService.post(messageRequest);
         return BaseResponseVO.success();
     }
 
+
+    /**
+     * 测试用接口，向数据库插入一条消息
+     * @param messageRequest 插入消息所必要的信息
+     * @return BaseResponseVO
+     */
     @PostMapping("/add")
     public BaseResponseVO add(@RequestBody MessageRequestVO messageRequest) {
         messageService.saveMessage(messageRequest);
