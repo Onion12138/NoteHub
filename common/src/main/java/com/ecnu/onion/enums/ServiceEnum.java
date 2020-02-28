@@ -18,6 +18,7 @@ public enum ServiceEnum {
     CODE_NOT_EXIST(16, "验证码不存在或已过期"),
     ACCOUNT_DISABLED(17, "用户被禁用"),
     ACCOUNT_NOT_ACTIVATED(18, "用户尚未激活"),
+    ACCOUNT_NOT_LOGIN(19, "请您登录"),
     NOTE_NOT_EXIST(31, "笔记不存在"),
     NOTE_DELETED(32, "笔记被删除"),
     REPEAT_OPERATION(33, "十分钟内不要重复操作"),

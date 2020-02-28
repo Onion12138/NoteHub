@@ -4,11 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.UserInfoDao;
 import com.ecnu.onion.domain.entity.UserInfo;
+import com.ecnu.onion.result.UserFollowResult;
 import com.ecnu.onion.service.UserService;
-import com.ecnu.onion.task.NoteRelationTask;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,13 +26,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserInfoDao userInfoDao;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
     @Override
     public void addViewRelation(String email, String noteId) {
         userInfoDao.addViewRelation(email, noteId, LocalDate.now().toString());
-        redisTemplate.opsForSet().add(NoteRelationTask.KEY, email);
     }
 
     @Override
@@ -62,18 +57,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserInfo> findMyFollowers(String email) {
-        return userInfoDao.findMyFollowers(email);
+    public List<UserFollowResult> findMyFollowers(String email) {
+        List<UserFollowResult> results = userInfoDao.findMyFollowers(email);
+        results.sort((o1, o2) -> - o1.getFollowDate().compareTo(o2.getFollowDate()));
+        return results;
     }
 
     @Override
-    public List<UserInfo> findMyFollowings(String email) {
-        return userInfoDao.findMyFollowings(email);
+    public List<UserFollowResult> findMyFollowings(String email) {
+        List<UserFollowResult> results = userInfoDao.findMyFollowings(email);
+        results.sort((o1, o2) -> - o1.getFollowDate().compareTo(o2.getFollowDate()));
+        return results;
     }
 
     @Override
     public void cancelFollowRelation(String followerEmail, String followedEmail) {
         userInfoDao.cancelFollowRelation(followerEmail, followedEmail);
+    }
+
+    @Override
+    public List<String> checkRelation(String email, String noteId) {
+        return userInfoDao.checkRelation(email, noteId);
     }
 
     @RabbitHandler

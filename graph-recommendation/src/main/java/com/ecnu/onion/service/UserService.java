@@ -1,6 +1,6 @@
 package com.ecnu.onion.service;
 
-import com.ecnu.onion.domain.entity.UserInfo;
+import com.ecnu.onion.result.UserFollowResult;
 
 import java.util.List;
 
@@ -21,10 +21,11 @@ public interface UserService {
 
     void addFollowRelation(String followerEmail, String followedEmail);
 
-    List<UserInfo> findMyFollowers(String email);
+    List<UserFollowResult> findMyFollowers(String email);
 
-    List<UserInfo> findMyFollowings(String email);
+    List<UserFollowResult> findMyFollowings(String email);
 
     void cancelFollowRelation(String followerEmail, String followedEmail);
 
+    List<String> checkRelation(String email, String noteId);
 }

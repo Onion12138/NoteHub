@@ -31,7 +31,7 @@ public class UserController {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/activate")
+    @GetMapping("/activate")
     public BaseResponseVO activate(@RequestParam String code) {
         userService.activate(code);
         return BaseResponseVO.success();

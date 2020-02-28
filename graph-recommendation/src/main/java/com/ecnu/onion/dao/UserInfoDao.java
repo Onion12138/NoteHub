@@ -1,7 +1,7 @@
 package com.ecnu.onion.dao;
 
-import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.domain.entity.UserInfo;
+import com.ecnu.onion.result.UserFollowResult;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.stereotype.Repository;
@@ -46,22 +46,21 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
 
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
             "where u2.email = {0} " +
-            "return u1")
-    List<UserInfo> findMyFollowers(String email);
+            "return f.followDate as followDate, u1.email as email, u1.username as username")
+    List<UserFollowResult> findMyFollowers(String email);
 
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
             "where u1.email = {0} " +
-            "return u2")
-    List<UserInfo> findMyFollowings(String email);
-
-    @Query("match (u:user)-[v:view]->(n:note)" +
-            "where u.email = {0} and v.viewDate = {1} " +
-            "return n")
-    List<NoteInfo> findViewedNote(String email, String viewDate);
-
-
+            "return f.followDate as followDate, u2.email as email, u2.username as username")
+    List<UserFollowResult> findMyFollowings(String email);
+    
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
-            "where u1.email = {0} and u2.email = {1}" +
-            "delete u1, f, u2")
+            "where u1.email = {0} and u2.email = {1} " +
+            "delete f ")
     void cancelFollowRelation(String followerEmail, String followedEmail);
+
+    @Query("match (u:user)-[r:star|hate|collect]->(n:note)" +
+            "where u.email = {0} and n.noteId = {1} " +
+            "return type(r)")
+    List<String> checkRelation(String email, String noteId);
 }

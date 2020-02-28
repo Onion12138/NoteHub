@@ -1,18 +1,17 @@
 package com.ecnu.onion.filter;
 
-import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
 import com.ecnu.onion.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,9 +28,9 @@ public class JwtFilter extends ZuulFilter {
 
     private AntPathMatcher matcher = new AntPathMatcher();
     private final String[] path = {
-            "/noteApi/user/register/**",
-            "/noteApi/user/activate/**",
-            "/noteApi/user/login/**"
+            "/notehub/noteApi/user/register/**",
+            "/notehub/noteApi/user/activate/**",
+            "/notehub/noteApi/user/login/**"
     };
     @Override
     public String filterType() {
@@ -58,22 +57,20 @@ public class JwtFilter extends ZuulFilter {
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
-        String token = request.getHeader("token").substring(5);
-        Claims claims;
-        try {
-            //解析没有异常则表示token验证通过，如有必要可根据自身需求增加验证逻辑
-            claims = JwtUtil.parseJwt(token);
-            log.info("token : {} 验证通过", token);
-            //对请求进行路由
-            ctx.setSendZuulResponse(true);
-            //请求头加入userId，传给业务服务
-            ctx.addZuulRequestHeader("email", claims.getId());
-        } catch (ExpiredJwtException expiredJwtEx) {
-            log.error("token : {} 过期", token );
+        String token = request.getHeader("token");
+        if (StringUtils.isEmpty(token)) {
             ctx.setSendZuulResponse(false);
-            throw new CommonServiceException(ServiceEnum.INVALID_TOKEN);
+            ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+            return null;
+//            throw new CommonServiceException(ServiceEnum.ACCOUNT_NOT_LOGIN);
+        }
+        token = token.substring(5);
+        try {
+            String email = JwtUtil.parseJwt(token);
+            ctx.setSendZuulResponse(true);
+            ctx.addZuulRequestHeader("email", email);
+
         } catch (Exception ex) {
-            log.error("token : {} 验证失败" , token );
             ctx.setSendZuulResponse(false);
             throw new CommonServiceException(-1, ex.getMessage());
         }

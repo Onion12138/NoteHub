@@ -27,36 +27,36 @@ public interface GroupDao extends Neo4jRepository<Group, Long> {
     List<GroupInfoResult> findMyJoinedGroups(String email);
 
     @Query("match (u:user)-[j:join]->(g:group) " +
-            "where u.email = {0} and g.groupId = {1} " +
+            "where u.email = {0} and id(g) = {1} " +
             "delete j")
     void exitGroup(String email, Long groupId);
 
     @Query("match (u1:user)-[m:manage]->(g:group)<-[j:join]-(u2:user)" +
-            "where u1.email = {0} and g.groupId = {1} " +
+            "where u1.email = {0} and id(g) = {1} " +
             "delete m, g, j")
     void deleteGroup(String email, Long groupId);
 
     @Query("match (g:group),(n:note) " +
-            "where g.groupId = {1} and n.noteId = {0} " +
+            "where id(g) = {1} and n.noteId = {0} " +
             "merge (g)-[:share {shareDate:{2}}]->(n)")
     void shareNotes(String noteId, Long groupId, String shareDate);
 
     @Query("match (u:user),(g:group)" +
-            "where u.email = {0} and g.groupId = {1}" +
+            "where u.email = {0} and id(g) = {1}" +
             "merge (u)-[:manage {manageDate:{2}}]->(g)")
     void manageGroup(String ownerEmail, Long groupId, String manageDate);
 
     @Query("match (u:user),(g:group)" +
-            "where u.email = {0} and g.groupId = {1}" +
+            "where u.email = {0} and id(g) = {1}" +
             "merge (u)-[:join {joinDate:{2}}]->(g)")
     void joinGroup(String partnerEmail, Long groupId, String joinDate);
 
     @Query("match (g:group)-[:share]-(n:note) " +
-            "where g.groupId = {0} " +
+            "where id(g) = {0} " +
             "return n")
     List<NoteInfo> findGroupNotes(Long groupId);
 
-    @Query("match (g:group) where g.groupId = {0} " +
+    @Query("match (g:group) where id(g) = {0} " +
             "set g.groupName = {1}")
     void modifyGroupName(Long groupId, String name);
 }

@@ -36,7 +36,7 @@ public class NoteController {
         List<Note> notes = noteService.findByTag(tag, page);
         return BaseResponseVO.success(notes);
     }
-    @GetMapping("/delete")
+    @PostMapping("/delete")
     public BaseResponseVO deleteNote(@RequestParam String noteId) {
         noteService.deleteNote(noteId);
         return BaseResponseVO.success();

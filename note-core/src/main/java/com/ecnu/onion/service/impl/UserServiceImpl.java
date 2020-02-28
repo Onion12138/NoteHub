@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
         if (user.getDisabled()) {
             throw new CommonServiceException(ServiceEnum.ACCOUNT_DISABLED);
         }
-        if (user.getActivated()) {
+        if (!user.getActivated()) {
             sendActivateLink(user);
             throw new CommonServiceException(ServiceEnum.ACCOUNT_NOT_ACTIVATED);
         }
@@ -304,7 +304,7 @@ public class UserServiceImpl implements UserService {
             moveToMenu(tag, noteId, title, mindMap.getChildren().get(i));
         }
     }
-    
+
     private void sendActivateLink(User user) {
         String content="<html>\n"+"<body>\n"
                 + "<a href='http://localhost:8080/notehub/noteApi/user/activate?code="+user.getActiveCode()+"'>点击激活NoteHub账号</a>\n"

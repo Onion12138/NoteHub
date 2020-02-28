@@ -6,6 +6,7 @@ import com.ecnu.onion.domain.entity.Group;
 import com.ecnu.onion.domain.entity.NoteInfo;
 import com.ecnu.onion.result.GroupInfoResult;
 import com.ecnu.onion.service.GroupService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.List;
  * @date 2020/1/23 -5:38 下午
  */
 @Service
+@Slf4j
 public class GroupServiceImpl implements GroupService {
     @Autowired
     private GroupDao groupDao;
@@ -26,6 +28,7 @@ public class GroupServiceImpl implements GroupService {
                 .createTime(LocalDate.now().toString()).build();
         group = groupDao.save(group);
         final Long groupId = group.getGroupId();
+        log.info("id:{}",groupId);
         groupDao.manageGroup(requestVO.getOwnerEmail(), groupId, LocalDate.now().toString());
         requestVO.getPartnerEmails().forEach(e->groupDao.joinGroup(e, groupId, LocalDate.now().toString()));
         return groupId;
