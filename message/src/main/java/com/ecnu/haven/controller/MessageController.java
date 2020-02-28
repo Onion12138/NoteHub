@@ -1,13 +1,17 @@
 package com.ecnu.haven.controller;
 
+import com.ecnu.haven.service.MessageService;
 import com.ecnu.haven.socket.WebSocket;
 import com.ecnu.haven.util.HeaderUtil;
 import com.ecnu.haven.vo.MessageRequestVO;
+import com.ecnu.haven.vo.MessageResponseVO;
 import com.ecnu.onion.vo.BaseRequestVO;
 import com.ecnu.onion.vo.BaseResponseVO;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 /**
@@ -15,56 +19,73 @@ import org.springframework.web.bind.annotation.*;
  * @date 2020/2/14 7:46 下午
  */
 @RestController
-@RequestMapping("/message")
 public class MessageController {
 
     @Autowired
-    private WebSocket webSocket;
+    private MessageService messageService;
 
     @GetMapping("/all")
     public BaseResponseVO getAllMessages() {
-        return BaseResponseVO.success();
+        List<MessageResponseVO> responseVOList = messageService.findAllMessages();
+        return BaseResponseVO.success(responseVOList);
     }
 
     @PostMapping("/status")
     public BaseResponseVO changeStatus(@RequestParam String messageId,
                                        @RequestParam String type) {
+        messageService.changeStatus(messageId, type);
         return BaseResponseVO.success();
     }
+
+    @PostMapping("/multiStatus")
+    public BaseResponseVO changeMultiStatus(@RequestParam List<String> messageIds,
+                                            @RequestParam String type) {
+        messageService.changeMultiStatus(messageIds, type);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/allRead")
+    public BaseResponseVO changeAllToRead() {
+        messageService.changeAllToRead();;
+        return BaseResponseVO.success();
+    }
+
 
     @PostMapping("/delete")
     public BaseResponseVO delete(@RequestParam String messageId) {
+        messageService.delete(messageId);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/group/create")
-    public BaseResponseVO pushCreateGroupMessage(@RequestBody MessageRequestVO messageRequest) {
+
+    @PostMapping("/deleteMulti")
+    public BaseResponseVO deleteMulti(@RequestParam List<String> messageIds) {
+        messageService.deleteMulti(messageIds);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/group/shareNote")
-    public BaseResponseVO pushShareNoteMessage(@RequestParam String sharedBy,
-                                               @RequestBody MessageRequestVO messageRequest) {
+    @PostMapping("/deleteAll")
+    public BaseResponseVO deleteAll() {
+        messageService.deleteAll();
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/user/comment")
-    public BaseResponseVO pushCommentMessage(@RequestParam String senderName,
-                                             @RequestParam String authorEmail,
-                                             @RequestParam String title) {
+    @PostMapping("/post")
+    public BaseResponseVO post(@RequestBody MessageRequestVO messageRequest) {
+        messageService.post(messageRequest);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/user/reply")
-    public BaseResponseVO pushReplyMessage(@RequestParam String senderName,
-                                           @RequestParam String receiverEmail,
-                                           @RequestParam String title) {
+
+    /**
+     * 测试用接口，向数据库插入一条消息
+     * @param messageRequest 插入消息所必要的信息
+     * @return BaseResponseVO
+     */
+    @PostMapping("/add")
+    public BaseResponseVO add(@RequestBody MessageRequestVO messageRequest) {
+        messageService.saveMessage(messageRequest);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/user/notifyUpdate")
-    public BaseResponseVO pushNoteUpdateMessage(@RequestParam String type,
-                                                @RequestBody MessageRequestVO messageRequest) {
-        return BaseResponseVO.success();
-    }
 }
