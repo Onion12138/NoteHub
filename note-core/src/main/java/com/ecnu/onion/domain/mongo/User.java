@@ -27,9 +27,7 @@ public class User {
     private String profileUrl;
     private LocalDate registerTime;
     private Set<String> interestedTags;
-    private String activeCode;
     private String salt;
-    private Boolean activated;
     private Set<CollectNote> collectNotes;
     private List<MindMap> collectIndexes;
 }

@@ -11,6 +11,5 @@ import org.springframework.data.neo4j.annotation.QueryResult;
 @Data
 public class NoteViewResult {
     private String noteId;
-    private String title;
     private String viewDate;
 }

@@ -53,7 +53,7 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
             "where u1.email = {0} " +
             "return f.followDate as followDate, u2.email as email, u2.username as username")
     List<UserFollowResult> findMyFollowings(String email);
-    
+
     @Query("match (u1:user)-[f:follow]->(u2:user)" +
             "where u1.email = {0} and u2.email = {1} " +
             "delete f ")

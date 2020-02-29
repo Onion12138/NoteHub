@@ -1,10 +1,7 @@
 package com.ecnu.onion.domain.search;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 /**
  * @author onion
@@ -15,11 +12,10 @@ import java.time.LocalDate;
 public class NoteSearch {
     private String id;
     private String email;
-    private String authorName;
-    @JsonFormat(pattern="yyyy/MM/dd")
-    private LocalDate createTime;
+    private String createTime;
+    private String updateTime;
     private String summary;
     private String keywords;
-    private String title;
-    private String tags;
+    private String description;
+    private String tag;
 }

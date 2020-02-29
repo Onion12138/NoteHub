@@ -11,7 +11,5 @@ import lombok.Data;
 @Builder
 public class NoteInfo {
     private String noteId;
-    private String title;
     private String publishTime;
-    private Boolean valid;
 }

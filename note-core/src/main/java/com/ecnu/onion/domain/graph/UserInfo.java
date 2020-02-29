@@ -1,19 +1,17 @@
-package com.ecnu.onion.domain.entity;
+package com.ecnu.onion.domain.graph;
 
+import lombok.Builder;
 import lombok.Data;
-import org.neo4j.ogm.annotation.Id;
-import org.neo4j.ogm.annotation.NodeEntity;
 
 import java.io.Serializable;
 
 /**
  * @author onion
- * @date 2020/1/23 -10:40 上午
+ * @date 2020/2/29 -9:50 上午
  */
-@NodeEntity(label = "user")
 @Data
+@Builder
 public class UserInfo implements Serializable {
-    @Id
     private String email;
     private String registerTime;
 }

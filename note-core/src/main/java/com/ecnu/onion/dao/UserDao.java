@@ -8,5 +8,4 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @date 2020/1/27 -10:56 上午
  */
 public interface UserDao extends MongoRepository<User, String> {
-    User findByActiveCode(String activeCode);
 }

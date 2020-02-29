@@ -1,5 +1,6 @@
 package com.ecnu.onion.controller;
 
+import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
 import com.ecnu.onion.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,16 +26,12 @@ import java.util.Set;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private TagDao tagDao;
 
     @PostMapping("/register")
     public BaseResponseVO register(@RequestBody RegisterVO registerVO) {
         userService.register(registerVO);
-        return BaseResponseVO.success();
-    }
-
-    @GetMapping("/activate")
-    public BaseResponseVO activate(@RequestParam String code) {
-        userService.activate(code);
         return BaseResponseVO.success();
     }
 
@@ -51,8 +49,7 @@ public class UserController {
     }
 
     @GetMapping("/sendCode")
-    public BaseResponseVO sendCode() {
-        String email = AuthUtil.getEmail();
+    public BaseResponseVO sendCode(@RequestParam String email) {
         userService.sendCode(email);
         return BaseResponseVO.success();
     }
@@ -72,8 +69,9 @@ public class UserController {
     }
 
     @PostMapping("/chooseTags")
-    public BaseResponseVO chooseTags(@RequestParam Set<String> tags) {
+    public BaseResponseVO chooseTags(@RequestParam String tagStr) {
         String email = AuthUtil.getEmail();
+        Set<String> tags = new HashSet<>(Set.of(tagStr.split(" ")));
         userService.chooseTags(email, tags);
         return BaseResponseVO.success();
     }

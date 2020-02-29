@@ -18,8 +18,6 @@ public interface UserService {
 
     void register(RegisterVO registerVO);
 
-    void activate(String code);
-
     Map<String, Object> login(LoginVO loginVO);
 
     String uploadProfile(String email, MultipartFile file);

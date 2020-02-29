@@ -5,10 +5,7 @@ import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.util.AuthUtil;
 import com.ecnu.onion.vo.BaseResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,44 +19,44 @@ public class UserController{
     @Autowired
     private UserService userService;
 
-    @GetMapping("/viewNote")
+    @PostMapping("/viewNote")
     public BaseResponseVO addViewRelation(@RequestParam String email, @RequestParam String noteId) {
         userService.addViewRelation(email, noteId);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/collectNote")
+    @PostMapping("/collectNote")
     public BaseResponseVO addCollectRelation(@RequestParam String email, @RequestParam String noteId) {
         userService.addCollectRelation(email, noteId);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/starNote")
+    @PostMapping("/starNote")
     public BaseResponseVO addStarRelation(@RequestParam String email, @RequestParam String noteId) {
         userService.addStarRelation(email, noteId);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/hateNote")
+    @PostMapping("/hateNote")
     public BaseResponseVO addHateRelation(@RequestParam String email, @RequestParam String noteId) {
         userService.addHateRelation(email, noteId);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/forkNote")
+    @PostMapping("/forkNote")
     public BaseResponseVO addForkRelation(@RequestParam String email, @RequestParam String noteId) {
         userService.addForkRelation(email, noteId);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/follow")
+    @PostMapping("/follow")
     public BaseResponseVO addFollowRelation(@RequestParam String followedEmail) {
         String email = AuthUtil.getEmail();
         userService.addFollowRelation(email, followedEmail);
         return BaseResponseVO.success();
     }
 
-    @GetMapping("/unfollow")
+    @PostMapping("/unfollow")
     public BaseResponseVO cancelFollowRelation(@RequestParam String followedEmail) {
         String email = AuthUtil.getEmail();
         userService.cancelFollowRelation(email, followedEmail);

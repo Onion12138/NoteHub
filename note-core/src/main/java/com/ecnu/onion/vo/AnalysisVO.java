@@ -11,6 +11,5 @@ public class AnalysisVO {
     private String summary;
     private String keywords;
     private String titles;
-    private String levelTitles;
-    private String tag;
+    private Title levelTitles;
 }

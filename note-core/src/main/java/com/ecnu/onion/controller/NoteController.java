@@ -1,7 +1,6 @@
 package com.ecnu.onion.controller;
 
 import com.ecnu.onion.domain.Comment;
-import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.service.NoteService;
 import com.ecnu.onion.utils.AuthUtil;
 import com.ecnu.onion.vo.AnalysisVO;
@@ -28,6 +27,7 @@ import java.util.Map;
 public class NoteController {
     @Autowired
     RestTemplate restTemplate;
+
     @Autowired
     private NoteService noteService;
 
@@ -51,8 +51,8 @@ public class NoteController {
     public BaseResponseVO publishNote(@RequestParam Map<String, String> map) {
         log.info("{}",map.get("content"));
         MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();
-        re.put("content", Collections.singletonList(map.get("content")));
-        AnalysisVO analyze = restTemplate.postForObject("http://localhost:5000/analyze", re, AnalysisVO.class);
+        re.put("note", Collections.singletonList(map.get("content")));
+        AnalysisVO analyze = restTemplate.postForObject("http://localhost:6000/analyze", re, AnalysisVO.class);
         log.info("{}",analyze);
         String id = noteService.publishNote(analyze, map);
         return BaseResponseVO.success(id);
@@ -64,26 +64,6 @@ public class NoteController {
         AnalysisVO analyze = restTemplate.postForObject("http://localhost:5000/analyze", re, AnalysisVO.class);
         int version = noteService.updateNote(analyze, map);
         return BaseResponseVO.success(version);
-    }
-    @PostMapping("/updateOverride")
-    public BaseResponseVO updateOverride(@RequestParam Map<String, String> map) {
-        MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();
-        re.put("content", Collections.singletonList(map.get("content")));
-        AnalysisVO analyze = restTemplate.postForObject("http://localhost:5000/analyze", re, AnalysisVO.class);
-        noteService.updateOverride(analyze, map);
-        return BaseResponseVO.success();
-    }
-
-    @GetMapping("/historyVersion")
-    public BaseResponseVO historyVersion(@RequestParam String noteId) {
-        Note note = noteService.historyVersion(noteId);
-        return BaseResponseVO.success(note);
-    }
-
-    @GetMapping("/rollback")
-    public BaseResponseVO rollback(@RequestParam String noteId, @RequestParam Integer version) {
-        noteService.rollback(noteId, version);
-        return BaseResponseVO.success();
     }
 
     @PostMapping("/changeAuthority")

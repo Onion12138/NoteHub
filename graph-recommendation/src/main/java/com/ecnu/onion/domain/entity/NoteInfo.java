@@ -1,9 +1,10 @@
 package com.ecnu.onion.domain.entity;
 
-import lombok.Builder;
 import lombok.Data;
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
+
+import java.io.Serializable;
 
 /**
  * @author onion
@@ -11,11 +12,8 @@ import org.neo4j.ogm.annotation.NodeEntity;
  */
 @NodeEntity(label = "note")
 @Data
-@Builder
-public class NoteInfo {
+public class NoteInfo implements Serializable {
     @Id
     private String noteId;
-    private String title;
     private String publishTime;
-    private Boolean valid;
 }

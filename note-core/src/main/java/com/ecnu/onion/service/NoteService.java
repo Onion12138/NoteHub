@@ -1,7 +1,6 @@
 package com.ecnu.onion.service;
 
 import com.ecnu.onion.domain.Comment;
-import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.vo.AnalysisVO;
 import com.ecnu.onion.vo.NoteResponseVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,10 +21,6 @@ public interface NoteService {
 
     NoteResponseVO findOneNote(String email, String noteId);
 
-    Note historyVersion(String noteId);
-
-    void rollback(String noteId, Integer version);
-
     void changeAuthority(String noteId, String authority);
 
     String comment(Comment comment);
@@ -33,8 +28,6 @@ public interface NoteService {
     void starOrHate(String type, String noteId, String email);
 
     void deleteComment(String noteId, String commentId);
-
-    void updateOverride(AnalysisVO analyze, Map<String, String> map);
 
     String uploadPicture(String noteId, MultipartFile file);
 }

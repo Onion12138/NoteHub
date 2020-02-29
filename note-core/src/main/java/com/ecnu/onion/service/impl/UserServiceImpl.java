@@ -1,10 +1,14 @@
 package com.ecnu.onion.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.ecnu.onion.api.GraphAPI;
 import com.ecnu.onion.constant.MQConstant;
+import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.dao.UserDao;
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
+import com.ecnu.onion.domain.graph.UserInfo;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.domain.mongo.User;
 import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
@@ -37,6 +41,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -66,6 +71,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private TagDao tagDao;
+
+    @Autowired
+    private GraphAPI graphAPI;
+
     @Value("${qiniu.access-key}")
     private String accessKey;
     @Value("${qiniu.secret-key}")
@@ -76,29 +87,35 @@ public class UserServiceImpl implements UserService {
     private long expireInSeconds;
 
     @Override
-    public void register(RegisterVO registerVO)  {
+    public void register(@Valid RegisterVO registerVO)  {
         if (userDao.findById(registerVO.getEmail()).isPresent()) {
             throw new CommonServiceException(ServiceEnum.EMAIL_IN_USE);
         }
+        String redisCode = redisTemplate.opsForValue().get("code_" + registerVO.getEmail());
+        if (redisCode == null) {
+            throw new CommonServiceException(ServiceEnum.CODE_NOT_EXIST);
+        }
+        if (!registerVO.getCode().equals(redisCode)) {
+            throw new CommonServiceException(ServiceEnum.WRONG_CODE);
+        }
         String salt = SaltUtil.getSalt();
         String password = Md5Util.encrypt(registerVO.getPassword() + salt);
-        User user = User.builder().email(registerVO.getEmail()).username(registerVO.getUsername()).registerTime(LocalDate.now())
-                .password(password).salt(salt).profileUrl("https://avatars2.githubusercontent.com/u/33611404?s=400&v=4")
-                .activated(false).disabled(false).activeCode(UuidUtil.getUuid())
+        User user = User.builder()
+                .email(registerVO.getEmail())
+                .username(registerVO.getUsername())
+                .registerTime(LocalDate.now())
+                .password(password)
+                .salt(salt)
+                .profileUrl("https://avatars2.githubusercontent.com/u/33611404?s=400&v=4")
+                .disabled(false)
                 .collectIndexes(new ArrayList<>())
                 .collectNotes(new HashSet<>())
                 .interestedTags(new HashSet<>())
                 .build();
         userDao.save(user);
-        sendActivateLink(user);
-    }
-
-    @Override
-    public void activate(String code) {
-        Query query = Query.query(Criteria.where("activeCode").is(code));
-        Update update = new Update();
-        update.set("activated", true);
-        mongoTemplate.updateFirst(query, update, User.class);
+        UserInfo userInfo = UserInfo.builder().email(user.getEmail())
+                .registerTime(LocalDate.now().toString()).build();
+        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.GRAPH_USER_QUEUE, JSON.toJSONString(userInfo));
     }
 
     @Override
@@ -111,10 +128,6 @@ public class UserServiceImpl implements UserService {
         User user = optionalUser.get();
         if (user.getDisabled()) {
             throw new CommonServiceException(ServiceEnum.ACCOUNT_DISABLED);
-        }
-        if (!user.getActivated()) {
-            sendActivateLink(user);
-            throw new CommonServiceException(ServiceEnum.ACCOUNT_NOT_ACTIVATED);
         }
         String salt = user.getSalt();
         String rawPassword = loginVO.getPassword();
@@ -237,7 +250,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteIndex(String email, Integer num) {
         User user = userDao.findById(email).get();
-        user.getCollectIndexes().remove(num);
+        user.getCollectIndexes().remove(num.intValue());
         userDao.save(user);
     }
 
@@ -247,9 +260,9 @@ public class UserServiceImpl implements UserService {
         user.getCollectNotes().add(note);
         String tag = note.getTag();
         moveToMenu(tag, note.getNoteId(), note.getTitle(), user.getCollectIndexes().get(0));
-        log.info("user:{}",user);
         userDao.save(user);
         increment("collect",note.getNoteId());
+        graphAPI.addCollectRelation(email, note.getNoteId());
     }
 
 
@@ -271,27 +284,18 @@ public class UserServiceImpl implements UserService {
 
     private MindMap generateDefaultMindMap() {
         MindMap defaultMap = new MindMap("默认索引");
-        String[] firstLevel = {"人工智能","前端开发","后端开发","移动/游戏开发","大数据云计算","测试运维","密码安全","学科基础","编程语言"};
-        String[] secondLevel = {"机器学习 深度学习 计算机视觉 数字图像处理 自然语言处理",
-                "Vue React Angular Html Css JavaScript TypeScript Node.js JQuery Bootstrap Webpack 微信小程序",
-                "SpringBoot SpringMVC Flask Django SpringCloud Redis Mongodb Mysql Oracle Neo4j Spring 消息队列",
-                "IOS Android 游戏开发",
-                "Linux Hadoop Hive Spark Hbase 数据分析与挖掘",
-                "Docker Kubernates 软件测试 Nginx",
-                "密码学 网络安全 计算机病毒",
-                "面向对象分析与设计 数据库原理 计算机网络 计算机组成 操作系统 UML 数字逻辑 数据结构 算法 编译原理 离散数学 形式化方法 专业英语 分布式系统 高等数学 线性代数 概率论与数理统计 凸优化 数值计算与优化 数学建模",
-                "Java C C++ Python C# Go PHP Kotlin Scala"
-        };
-        for (int i = 0; i < firstLevel.length; i++) {
-            MindMap mindMap = new MindMap(firstLevel[i]);
-            String[] children = secondLevel[i].split(" ");
-            for (String child : children) {
+        List<Tag> tagList = tagDao.findAll();
+        for (Tag tag : tagList) {
+            MindMap mindMap = new MindMap(tag.getName());
+            List<String> subTags = tag.getSubTags();
+            for (String child : subTags) {
                 mindMap.addComponent(new MindMap(child));
             }
             defaultMap.addComponent(mindMap);
         }
         return defaultMap;
     }
+
     private void moveToMenu(String tag, String noteId, String title, MindMap mindMap) {
         if (mindMap.isLeaf()) {
             return;
@@ -303,14 +307,6 @@ public class UserServiceImpl implements UserService {
         for (int i = 0; i < mindMap.getChildren().size(); i++) {
             moveToMenu(tag, noteId, title, mindMap.getChildren().get(i));
         }
-    }
-
-    private void sendActivateLink(User user) {
-        String content="<html>\n"+"<body>\n"
-                + "<a href='http://localhost:8080/notehub/noteApi/user/activate?code="+user.getActiveCode()+"'>点击激活NoteHub账号</a>\n"
-                +"</body>\n"+"</html>!" + user.getEmail();
-        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.MAIL_QUEUE, content);
-        log.info("html:{}",content);
     }
 
     private void increment(String field, String noteId) {

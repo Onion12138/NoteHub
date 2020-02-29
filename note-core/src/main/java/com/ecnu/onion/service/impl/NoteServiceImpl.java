@@ -2,7 +2,6 @@ package com.ecnu.onion.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.ecnu.onion.api.GraphAPI;
-import com.ecnu.onion.api.SearchAPI;
 import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.NoteDao;
 import com.ecnu.onion.domain.Comment;
@@ -25,6 +24,7 @@ import com.qiniu.storage.Region;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
  * @date 2020/1/31 -2:29 下午
  */
 @Service
+@Slf4j
 public class NoteServiceImpl implements NoteService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -60,10 +61,7 @@ public class NoteServiceImpl implements NoteService {
     @Autowired
     private GraphAPI graphAPI;
     @Autowired
-    private SearchAPI searchAPI;
-    @Autowired
     private RedisTemplate<String, String> redisTemplate;
-
 
     @Value("${qiniu.access-key}")
     private String accessKey;
@@ -76,44 +74,46 @@ public class NoteServiceImpl implements NoteService {
     /*
     *
     *
+      @Id
     private String id;
     private String authorEmail;
-    private String authorName;
-    private String title;
+    private String description;
     private Boolean authority;
     private String forkFrom;
-    private List<LocalDateTime> createTime;
-    private List<String> tag;
-    private List<String> titles;
-    private List<String> keywords;
-    private List<String> levelTitles;
-    private List<String> summary;
-    private List<String> content;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    private String tag;
+    private String keywords;
+    private String titles;
+    private String levelTitle;
+    private String summary;
+    private String content;
     private Integer stars;
     private Integer views;
     private Integer hates;
     private Integer forks;
     private Integer collects;
-    private Integer version;
     private Boolean valid;
     private List<Comment> comments;
     * */
     @Override
     public String publishNote(AnalysisVO analyze, Map<String, String> map) {
         String id = KeyUtil.getUniqueKey();
-        Note note = Note.builder().id(id).authorEmail(map.get("authorEmail"))
-                .authorName(map.get("authorName"))
+        Note note = Note.builder()
+                .id(id)
+                .authorEmail(map.get("authorEmail"))
+                .description(map.get("description"))
                 .authority("write".equals(map.get("authority")))
-                .title(map.get("title"))
-                .createTime(Collections.singletonList(LocalDateTime.now()))
+                .createTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
                 .forkFrom("")
-                .keywords(Collections.singletonList(analyze.getKeywords()))
-                .levelTitles(Collections.singletonList(analyze.getLevelTitles()))
-                .summary(Collections.singletonList(analyze.getSummary()))
-                .titles(Collections.singletonList(analyze.getTitles()))
-                .tag(Collections.singletonList(analyze.getTag()))
-                .stars(0).views(0).hates(0).forks(0).collects(0).version(0).valid(true)
-                .content(Collections.singletonList(map.get("content")))
+                .tag(map.get("tag"))
+                .keywords(analyze.getKeywords())
+                .titles(analyze.getTitles())
+                .levelTitle(analyze.getLevelTitles().toString())
+                .summary(analyze.getSummary())
+                .content(map.get("content"))
+                .stars(0).views(0).hates(0).forks(0).collects(0).valid(true)
                 .comments(new ArrayList<>())
                 .build();
         String forkFrom = map.get("forkFrom");
@@ -129,31 +129,27 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public int updateNote(AnalysisVO analyze, Map<String, String> map) {
-        String id = map.get("id");
-        Note note = findById(id);
-        int version = note.getContent().size();
-        note.setVersion(version);
-        note.getContent().add(map.get("content"));
-        note.getSummary().add(analyze.getSummary());
-        note.getLevelTitles().add(analyze.getLevelTitles());
-        note.getTitles().add(analyze.getTitles());
-        note.getTag().add(analyze.getTag());
-        noteDao.save(note);
-        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
-        return version;
+//        String id = map.get("id");
+//        Note note = findById(id);
+//        note.setVersion(version);
+//        note.getContent().add(map.get("content"));
+//        note.getSummary().add(analyze.getSummary());
+////        note.getTitleString().add(analyze.getTitles());
+//        note.getLevelTitle().add(analyze.getLevelTitles());
+//        note.getTitles().add(analyze.getTitles());
+//        noteDao.save(note);
+//        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
+        return 0;
     }
 
     @Override
     public void deleteNote(String noteId) {
         updateField(noteId, "valid", false);
-        searchAPI.deleteNote(noteId);
-        graphAPI.deleteNote(noteId);
     }
 
     @Override
     public NoteResponseVO findOneNote(String email, String noteId) {
         Note note = findById(noteId);
-        int version = note.getVersion();
         if (!note.getValid()) {
             throw new CommonServiceException(ServiceEnum.NOTE_DELETED);
         }
@@ -162,12 +158,12 @@ public class NoteServiceImpl implements NoteService {
         return NoteResponseVO.builder()
                 .id(noteId)
                 .authorEmail(note.getAuthorEmail())
-                .authorName(note.getAuthorName())
+//                .authorName(note.getAuthorName())
                 .authority(note.getAuthority())
-                .title(note.getTitle())
-                .content(note.getContent().get(version))
+//                .title(note.getTitle())
+//                .content(note.getContent().get(version))
                 .forkFrom(note.getForkFrom())
-                .createTime(note.getCreateTime().get(version))
+//                .createTime(note.getCreateTime().get(version))
                 .comments(note.getComments())
                 .stars(note.getStars())
                 .hates(note.getHates())
@@ -177,15 +173,6 @@ public class NoteServiceImpl implements NoteService {
                 .build();
     }
 
-    @Override
-    public Note historyVersion(String noteId) {
-        return findById(noteId);
-    }
-
-    @Override
-    public void rollback(String noteId, Integer version) {
-        updateField(noteId, "version", version);
-    }
 
     @Override
     public void changeAuthority(String noteId, String authority) {
@@ -248,20 +235,6 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public void updateOverride(AnalysisVO analyze, Map<String, String> map) {
-        String id = map.get("id");
-        Note note = findById(id);
-        int version = note.getVersion();
-        note.getContent().set(version, map.get("content"));
-        note.getSummary().set(version, analyze.getSummary());
-        note.getLevelTitles().set(version, analyze.getLevelTitles());
-        note.getTitles().set(version, analyze.getTitles());
-        note.getTag().set(version, analyze.getTag());
-        noteDao.save(note);
-        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
-    }
-
-    @Override
     public String uploadPicture(String noteId, MultipartFile file) {
         InputStream fileInputStream = null;
         try {
@@ -284,23 +257,24 @@ public class NoteServiceImpl implements NoteService {
     }
 
     private String asGraphJson(Note note) {
-        NoteInfo noteInfo = NoteInfo.builder().publishTime(LocalDate.now().toString())
-                .title(note.getTitle())
+        NoteInfo noteInfo = NoteInfo.builder()
+                .publishTime(LocalDate.now().toString())
                 .noteId(note.getId())
-                .valid(true)
                 .build();
+        log.info("note:{}", JSON.toJSONString(noteInfo));
         return JSON.toJSONString(noteInfo);
     }
 
     private String asSearchJson(Note note) {
-        int version = note.getVersion();
-        NoteSearch noteSearch = NoteSearch.builder().id(note.getId()).email(note.getAuthorEmail())
-                .authorName(note.getAuthorName())
-                .keywords(note.getKeywords().get(version))
-                .summary(note.getSummary().get(version))
-                .title(note.getTitle())
-                .tags(note.getTag().get(version))
-                .createTime(LocalDate.now()).build();
+        NoteSearch noteSearch = NoteSearch.builder()
+                .id(note.getId())
+                .email(note.getAuthorEmail())
+                .keywords(note.getKeywords() + "," + note.getTitles())
+                .summary(note.getSummary())
+                .description(note.getDescription())
+                .tag(note.getTag())
+                .createTime(LocalDate.now().toString())
+                .updateTime(LocalDate.now().toString()).build();
         return JSON.toJSONString(noteSearch);
     }
 
