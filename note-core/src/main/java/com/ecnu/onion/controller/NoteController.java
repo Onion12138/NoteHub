@@ -1,6 +1,5 @@
 package com.ecnu.onion.controller;
 
-import com.ecnu.onion.domain.Comment;
 import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.service.NoteService;
 import com.ecnu.onion.utils.AuthUtil;
@@ -43,16 +42,7 @@ public class NoteController {
         noteService.starOrHate(type, noteId, email);
         return BaseResponseVO.success();
     }
-    @PostMapping("/comment")
-    public BaseResponseVO comment(@RequestBody Comment comment) {
-        String commentId = noteService.comment(comment);
-        return BaseResponseVO.success(commentId);
-    }
-    @PostMapping("/deleteComment")
-    public BaseResponseVO deleteComment(@RequestParam String noteId, @RequestParam String commentId) {
-        noteService.deleteComment(noteId, commentId);
-        return BaseResponseVO.success();
-    }
+
     @PostMapping("/publish")
     public BaseResponseVO publishNote(@RequestParam Map<String, String> map) {
         MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();

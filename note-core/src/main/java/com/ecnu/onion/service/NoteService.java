@@ -1,6 +1,5 @@
 package com.ecnu.onion.service;
 
-import com.ecnu.onion.domain.Comment;
 import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.vo.AnalysisVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,11 +22,7 @@ public interface NoteService {
 
     void changeAuthority(String noteId, String authority);
 
-    String comment(Comment comment);
-
     void starOrHate(String type, String noteId, String email);
-
-    void deleteComment(String noteId, String commentId);
 
     String uploadPicture(String noteId, MultipartFile file);
 

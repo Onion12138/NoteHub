@@ -28,4 +28,10 @@ public interface UserService {
     void cancelFollowRelation(String followerEmail, String followedEmail);
 
     List<String> checkRelation(String email, String noteId);
+
+    void addFriend(String email, String friendEmail);
+
+    void deleteFriend(String email, String friendEmail);
+
+    List<String> getMyFriends(String email);
 }

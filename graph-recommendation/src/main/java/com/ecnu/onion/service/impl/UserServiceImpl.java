@@ -80,6 +80,21 @@ public class UserServiceImpl implements UserService {
         return userInfoDao.checkRelation(email, noteId);
     }
 
+    @Override
+    public void addFriend(String email, String friendEmail) {
+        userInfoDao.addFriendRelation(email, friendEmail, LocalDate.now().toString());
+    }
+
+    @Override
+    public void deleteFriend(String email, String friendEmail) {
+        userInfoDao.deleteFriendRelation(email, friendEmail);
+    }
+
+    @Override
+    public List<String> getMyFriends(String email) {
+        return userInfoDao.getMyFriends(email);
+    }
+
     @RabbitHandler
     private void addUser(String message) {
         UserInfo userInfo = JSON.parseObject(message, UserInfo.class);

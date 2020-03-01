@@ -9,7 +9,7 @@ import com.ecnu.haven.util.HeaderUtil;
 import com.ecnu.haven.util.KeyUtil;
 import com.ecnu.haven.vo.MessageRequestVO;
 import com.ecnu.haven.vo.MessageResponseVO;
-import com.ecnu.onion.vo.BaseRequestVO;
+
 import com.ecnu.onion.vo.BaseResponseVO;
 import com.mongodb.WriteResult;
 import com.mongodb.client.result.UpdateResult;

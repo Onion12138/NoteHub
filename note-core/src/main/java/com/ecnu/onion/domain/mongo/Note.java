@@ -1,6 +1,5 @@
 package com.ecnu.onion.domain.mongo;
 
-import com.ecnu.onion.domain.Comment;
 import com.ecnu.onion.domain.Title;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * @author onion
@@ -34,6 +32,6 @@ public class Note implements Serializable {
     private String summary;
     private String content;
     private Boolean valid;
-    private List<Comment> comments;
+//    private List<Comment> comments;
 
 }

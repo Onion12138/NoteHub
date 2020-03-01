@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author onion
  * @date 2020/1/30 -9:56 上午
  */
-@FeignClient(value = "graph-recommendation")
+@FeignClient(value = "graph")
 public interface GraphAPI {
 
     @PostMapping("/user/forkNote")
@@ -26,4 +26,5 @@ public interface GraphAPI {
 
     @PostMapping("/user/collectNote")
     BaseResponseVO addCollectRelation(@RequestParam String email, @RequestParam String noteId);
+
 }

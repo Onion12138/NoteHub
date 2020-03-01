@@ -1,7 +1,6 @@
 package com.ecnu.onion.result;
 
 import com.ecnu.onion.domain.entity.Group;
-import com.ecnu.onion.domain.entity.UserInfo;
 import lombok.Data;
 import org.springframework.data.neo4j.annotation.QueryResult;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @QueryResult
 @Data
 public class GroupInfoResult {
-    private UserInfo owner;
-    private List<UserInfo> partner;
+    private String owner;
+    private List<String> partner;
     private Group group;
 }

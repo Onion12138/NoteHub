@@ -1,12 +1,11 @@
 package com.ecnu.haven.vo;
 
-import com.ecnu.haven.enums.MessageType;
+import com.ecnu.onion.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * @author HavenTong

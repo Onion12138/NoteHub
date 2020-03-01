@@ -1,14 +1,21 @@
 server:
-  port: 8672
+  port: 9006
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://notehub:123456@localhost:9000/eureka/
 spring:
   application:
-    name: notehub-message
+    name: message
   data:
     mongodb:
-      host: 120.77.176.55
+      host: 182.61.23.125
       port: 27017
       database: notehub
+      username: admin
+      password: admin
+      authentication-database: admin
 logging:
   level:
     org.springframework.data.mongodb.core: DEBUG

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.ecnu.onion.api.GraphAPI;
 import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.NoteDao;
-import com.ecnu.onion.domain.Comment;
 import com.ecnu.onion.domain.graph.NoteInfo;
 import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.domain.search.NoteSearch;
@@ -33,18 +32,14 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author onion
@@ -72,40 +67,17 @@ public class NoteServiceImpl implements NoteService {
     private String bucket;
     @Value("2592000")
     private long expireInSeconds;
-    /*
-    *
-    *
-      @Id
-    private String id;
-    private String authorEmail;
-    private String description;
-    private Boolean authority;
-    private String forkFrom;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private String tag;
-    private String keywords;
-    private String titles;
-    private String levelTitle;
-    private String summary;
-    private String content;
-    private Integer stars;
-    private Integer views;
-    private Integer hates;
-    private Integer forks;
-    private Integer collects;
-    private Boolean valid;
-    private List<Comment> comments;
-    * */
+
     @Override
     public String publishNote(AnalysisVO analyze, Map<String, String> map) {
         if (analyze.getCode() != 0) {
             throw new CommonServiceException(ServiceEnum.NOTE_ILLEGAL);
         }
         String id = KeyUtil.getUniqueKey();
+        String email = map.get("authorEmail");
         Note note = Note.builder()
                 .id(id)
-                .authorEmail(map.get("authorEmail"))
+                .authorEmail(email)
                 .description(map.get("description"))
                 .authority("write".equals(map.get("authority")))
                 .createTime(LocalDateTime.now())
@@ -117,7 +89,6 @@ public class NoteServiceImpl implements NoteService {
                 .summary(analyze.getSummary())
                 .content(map.get("content"))
                 .valid(true)
-                .comments(new ArrayList<>())
                 .build();
         String forkFrom = map.get("forkFrom");
         if (forkFrom != null) {
@@ -127,7 +98,7 @@ public class NoteServiceImpl implements NoteService {
         noteDao.save(note);
         String[] fields = {"star","hate","view","collect","fork"};
         for (String field: fields) {
-            redisTemplate.opsForHash().put(id, field, 0);
+            redisTemplate.opsForHash().put(id, field, "0");
         }
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.GRAPH_NOTE_QUEUE, asGraphJson(note));
@@ -175,33 +146,35 @@ public class NoteServiceImpl implements NoteService {
         updateField(noteId, "authority", "write".equals(authority));
     }
 
-    @Override
-    public String comment(Comment comment) {
-        Optional<Note> optional = noteDao.findById(comment.getNoteId());
-        if (optional.isEmpty()) {
-            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
-        }
-        Note note = optional.get();
-        String commentId = UuidUtil.getUuid();
-        comment.setCommentId(commentId);
-        List<Comment> commentList = note.getComments();
-        if (StringUtils.isEmpty(comment.getReplyTo())){
-            commentList.add(comment);
-            note.setComments(commentList);
-            noteDao.save(note);
-            return commentId;
-        }
-        int i;
-        for (i = 0; i < commentList.size() - 1; i++) {
-            if (commentList.get(i).getCommentId().equals(comment.getReplyTo())) {
-                break;
-            }
-        }
-        commentList.add(i+1, comment);
-        note.setComments(commentList);
-        noteDao.save(note);
-        return commentId;
-    }
+//    @Override
+//    public String comment(CommentVO commentVO) {
+//        Optional<Note> optional = noteDao.findById(commentVO.getNoteId());
+//        if (optional.isEmpty()) {
+//            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
+//        }
+//        Note note = optional.get();
+//        String commentId = UuidUtil.getUuid();
+//        commentVO.setCommentId(commentId);
+//        List<Comment> commentList = note.getComments();
+//        Comment comment = new Comment();
+//        BeanUtils.copyProperties(commentVO, comment);
+//        if (StringUtils.isEmpty(commentVO.getParentCommentId())){
+//            commentList.add(comment);
+//            note.setComments(commentList);
+//            noteDao.save(note);
+//            return commentId;
+//        }
+//        int i;
+//        for (i = 0; i < commentList.size() - 1; i++) {
+//            if (commentList.get(i).getCommentId().equals(commentVO.getParentCommentId())) {
+//                break;
+//            }
+//        }
+//        commentList.add(i+1, comment);
+//        note.setComments(commentList);
+//        noteDao.save(note);
+//        return commentId;
+//    }
 
     @Override
     public void starOrHate(String type, String noteId, String email) {
@@ -214,19 +187,19 @@ public class NoteServiceImpl implements NoteService {
         }
     }
 
-    @Override
-    public void deleteComment(String noteId, String commentId) {
-        Optional<Note> optional = noteDao.findById(noteId);
-        if (optional.isEmpty()) {
-            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
-        }
-        Note note = optional.get();
-        List<Comment> commentList = note.getComments();
-        note.setComments(commentList.stream().filter
-                (e-> !e.getCommentId().equals(commentId) && !commentId.equals(e.getReplyTo()))
-                .collect(Collectors.toList()));
-        noteDao.save(note);
-    }
+//    @Override
+//    public void deleteComment(String noteId, String commentId) {
+//        Optional<Note> optional = noteDao.findById(noteId);
+//        if (optional.isEmpty()) {
+//            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
+//        }
+//        Note note = optional.get();
+//        List<Comment> commentList = note.getComments();
+//        note.setComments(commentList.stream().filter
+//                (e-> !e.getCommentId().equals(commentId) && !commentId.equals(e.getParentCommentId()))
+//                .collect(Collectors.toList()));
+//        noteDao.save(note);
+//    }
 
     @Override
     public String uploadPicture(String noteId, MultipartFile file) {

@@ -1,4 +1,4 @@
-package com.ecnu.haven.enums;
+package com.ecnu.onion.enums;
 
 /**
  * @author HavenTong

@@ -29,7 +29,7 @@ public class JwtFilter extends ZuulFilter {
     private AntPathMatcher matcher = new AntPathMatcher();
     private final String[] path = {
             "/notehub/noteApi/user/register/**",
-            "/notehub/noteApi/user/activate/**",
+            "/notehub/noteApi/user/sendCode/**",
             "/notehub/noteApi/user/login/**"
     };
     @Override
@@ -69,7 +69,6 @@ public class JwtFilter extends ZuulFilter {
             String email = JwtUtil.parseJwt(token);
             ctx.setSendZuulResponse(true);
             ctx.addZuulRequestHeader("email", email);
-
         } catch (Exception ex) {
             ctx.setSendZuulResponse(false);
             throw new CommonServiceException(-1, ex.getMessage());

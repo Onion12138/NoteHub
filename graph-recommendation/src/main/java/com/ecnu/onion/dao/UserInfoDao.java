@@ -63,4 +63,19 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
             "where u.email = {0} and n.noteId = {1} " +
             "return type(r)")
     List<String> checkRelation(String email, String noteId);
+
+    @Query("match (u:user),(u1:user)" +
+            "where u.email = {0} and n1.email = {1} " +
+            "merge (u)-[f:friend {meetDate:{2}}]->(u1)")
+    void addFriendRelation(String email, String friendEmail, String date);
+
+    @Query("match (u:user)-[f:friend]-(u1:user)" +
+            "where u.email = {0} and n1.email = {1} " +
+            "delete f")
+    void deleteFriendRelation(String email, String friendEmail);
+
+    @Query("match (u:user)-[f:friend]-(u1:user) " +
+            "where u.email = {0} " +
+            "return u1.email")
+    List<String> getMyFriends(String email);
 }

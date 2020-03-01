@@ -11,6 +11,5 @@ import org.springframework.data.neo4j.annotation.QueryResult;
 @Data
 public class UserFollowResult {
     private String email;
-    private String username;
     private String followDate;
 }

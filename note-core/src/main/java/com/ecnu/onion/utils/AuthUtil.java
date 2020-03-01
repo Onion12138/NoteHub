@@ -16,4 +16,10 @@ public class AuthUtil {
         HttpServletRequest request = servletRequestAttributes.getRequest();
         return request.getHeader("email");
     }
+    public static String getName() {
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        assert servletRequestAttributes != null;
+        HttpServletRequest request = servletRequestAttributes.getRequest();
+        return request.getHeader("name");
+    }
 }

@@ -17,13 +17,13 @@ import java.util.List;
 public interface GroupDao extends Neo4jRepository<Group, Long> {
     @Query("match (u1:user)-[m:manage]->(g:group)<-[j:join]-(u2:user) " +
             "where u1.email = {0}" +
-            "return u1 as owner, g as group, collect(u2) as partner")
+            "return u1.email as owner, g as group, collect(u2.email) as partner")
     List<GroupInfoResult> findMyManagedGroups(String email);
 
     @Query("match (u1:user)-[m:join]->(g:group)<-[j:join]-(u2:user) " +
             "match (u3:user)-[n:manage]->(g:group) " +
             "where u1.email = {0}" +
-            "return u3 as owner, g as group, collect(u2) as partner")
+            "return u3.email as owner, g as group, collect(u2.email) as partner")
     List<GroupInfoResult> findMyJoinedGroups(String email);
 
     @Query("match (u:user)-[j:join]->(g:group) " +

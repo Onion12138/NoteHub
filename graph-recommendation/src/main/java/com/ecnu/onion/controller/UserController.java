@@ -84,4 +84,25 @@ public class UserController{
         return BaseResponseVO.success(relation);
     }
 
+    @PostMapping("/friend")
+    public BaseResponseVO friend(@RequestParam String friendEmail) {
+        String email = AuthUtil.getEmail();
+        userService.addFriend(email, friendEmail);
+        return BaseResponseVO.success();
+    }
+    @PostMapping("/deleteFriend")
+    public BaseResponseVO deleteFriend(@RequestParam String friendEmail) {
+        String email = AuthUtil.getEmail();
+        userService.deleteFriend(email, friendEmail);
+        return BaseResponseVO.success();
+    }
+
+    @GetMapping("/myFriends")
+    public BaseResponseVO myFriends() {
+        String email = AuthUtil.getEmail();
+        List<String> friends = userService.getMyFriends(email);
+        return BaseResponseVO.success();
+    }
+
+
 }

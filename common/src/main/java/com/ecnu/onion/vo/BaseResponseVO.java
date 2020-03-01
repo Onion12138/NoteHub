@@ -30,6 +30,13 @@ public class BaseResponseVO {
         return response;
     }
 
+    public static BaseResponseVO error(String message) {
+        BaseResponseVO response = new BaseResponseVO();
+        response.setCode(200);
+        response.setMessage(message);
+        response.setData(null);
+        return response;
+    }
     public static BaseResponseVO serviceException(RuntimeException e){
         BaseResponseVO response = new BaseResponseVO();
         if (e instanceof CommonServiceException) {
