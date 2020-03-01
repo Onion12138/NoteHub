@@ -1,11 +1,11 @@
 package com.ecnu.onion.controller;
 
 import com.ecnu.onion.domain.Comment;
+import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.service.NoteService;
 import com.ecnu.onion.utils.AuthUtil;
 import com.ecnu.onion.vo.AnalysisVO;
 import com.ecnu.onion.vo.BaseResponseVO;
-import com.ecnu.onion.vo.NoteResponseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
@@ -31,6 +31,12 @@ public class NoteController {
     @Autowired
     private NoteService noteService;
 
+    @GetMapping("/counter")
+    public BaseResponseVO getCounter(@RequestParam String noteId) {
+        Map<Object, Object> counter = noteService.getCounter(noteId);
+        return BaseResponseVO.success(counter);
+    }
+
     @PostMapping("/starOrHate")
     public BaseResponseVO starOrHate(@RequestParam String type, @RequestParam String noteId) {
         String email = AuthUtil.getEmail();
@@ -42,28 +48,26 @@ public class NoteController {
         String commentId = noteService.comment(comment);
         return BaseResponseVO.success(commentId);
     }
-    @GetMapping("/deleteComment")
+    @PostMapping("/deleteComment")
     public BaseResponseVO deleteComment(@RequestParam String noteId, @RequestParam String commentId) {
         noteService.deleteComment(noteId, commentId);
         return BaseResponseVO.success();
     }
     @PostMapping("/publish")
     public BaseResponseVO publishNote(@RequestParam Map<String, String> map) {
-        log.info("{}",map.get("content"));
         MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();
         re.put("note", Collections.singletonList(map.get("content")));
         AnalysisVO analyze = restTemplate.postForObject("http://localhost:6000/analyze", re, AnalysisVO.class);
-        log.info("{}",analyze);
         String id = noteService.publishNote(analyze, map);
         return BaseResponseVO.success(id);
     }
     @PostMapping("/update")
     public BaseResponseVO updateNote(@RequestParam Map<String, String> map) {
         MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();
-        re.put("content", Collections.singletonList(map.get("content")));
-        AnalysisVO analyze = restTemplate.postForObject("http://localhost:5000/analyze", re, AnalysisVO.class);
-        int version = noteService.updateNote(analyze, map);
-        return BaseResponseVO.success(version);
+        re.put("note", Collections.singletonList(map.get("content")));
+        AnalysisVO analyze = restTemplate.postForObject("http://localhost:6000/analyze", re, AnalysisVO.class);
+        noteService.updateNote(analyze, map);
+        return BaseResponseVO.success();
     }
 
     @PostMapping("/changeAuthority")
@@ -81,8 +85,8 @@ public class NoteController {
     @GetMapping("/findOne")
     public BaseResponseVO findNote(@RequestParam String noteId) {
         String email = AuthUtil.getEmail();
-        NoteResponseVO responseVO = noteService.findOneNote(email, noteId);
-        return BaseResponseVO.success(responseVO);
+        Note note = noteService.findOneNote(email, noteId);
+        return BaseResponseVO.success(note);
     }
 
     @PostMapping("/uploadPicture")

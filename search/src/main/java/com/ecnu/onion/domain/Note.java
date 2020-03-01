@@ -27,6 +27,8 @@ public class Note {
     private String keywords;
     @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
     private String description;
+    @Field(type = FieldType.Text, analyzer = "ik_smart")
+    private String titles;
     @Field(type = FieldType.Keyword)
     private String tag;
 }

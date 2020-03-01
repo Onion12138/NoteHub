@@ -41,12 +41,16 @@ public class NoteServiceImpl implements NoteService {
     @Override
     public Page<Note> findByKeyword(String keyword, int page) {
         HighlightBuilder highlightBuilder = new HighlightBuilder()
-                .field("summary").field("keywords").field("description");
+                .field("summary")
+                .field("keywords")
+                .field("description")
+                .field("titles");
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(multiMatchQuery(keyword, "summary","keywords","description")
+                .withQuery(multiMatchQuery(keyword, "summary","keywords","description","titles")
                                 .field("description", 3.0f)
-                        .field("summary",1.0f)
-                        .field("keywords",0.4f)
+                        .field("titles", 1.0f)
+                        .field("summary",0.4f)
+                        .field("keywords",0.2f)
                         .type(MultiMatchQueryBuilder.Type.MOST_FIELDS))
                 .withHighlightBuilder(highlightBuilder)
                 .withPageable(PageRequest.of(page - 1, 10 )).build();

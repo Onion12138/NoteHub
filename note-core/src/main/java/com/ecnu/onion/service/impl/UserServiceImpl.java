@@ -17,6 +17,7 @@ import com.ecnu.onion.utils.*;
 import com.ecnu.onion.vo.LoginVO;
 import com.ecnu.onion.vo.ModificationVO;
 import com.ecnu.onion.vo.RegisterVO;
+import com.ecnu.onion.vo.UserVO;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
@@ -31,6 +32,7 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -242,16 +244,36 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public MindMap findOneIndex(String email, Integer num) {
+    public MindMap findOneIndex(String email, int num) {
         User user = userDao.findById(email).get();
         return user.getCollectIndexes().get(num);
     }
 
     @Override
-    public void deleteIndex(String email, Integer num) {
+    public void deleteIndex(String email, int num) {
         User user = userDao.findById(email).get();
-        user.getCollectIndexes().remove(num.intValue());
+        user.getCollectIndexes().remove(num);
         userDao.save(user);
+    }
+
+    @Override
+    public void modifyUsername(String email, String username) {
+        Query query = Query.query(Criteria.where("_id").is(email));
+        Update update = Update.update("username",username);
+        mongoTemplate.updateFirst(query,update,User.class);
+    }
+
+    @Override
+    public UserVO findUser(String email) {
+        User user = userDao.findById(email).get();
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
+
+    @Override
+    public List<Tag> findTag() {
+        return tagDao.findAll();
     }
 
     @Override
@@ -259,9 +281,9 @@ public class UserServiceImpl implements UserService {
         User user = userDao.findById(email).get();
         user.getCollectNotes().add(note);
         String tag = note.getTag();
-        moveToMenu(tag, note.getNoteId(), note.getTitle(), user.getCollectIndexes().get(0));
+        moveToMenu(tag, note.getNoteId(), note.getDescription(), user.getCollectIndexes().get(0));
         userDao.save(user);
-        increment("collect",note.getNoteId());
+        redisTemplate.opsForHash().increment(note.getNoteId(), "collect",1);
         graphAPI.addCollectRelation(email, note.getNoteId());
     }
 
@@ -306,14 +328,6 @@ public class UserServiceImpl implements UserService {
         }
         for (int i = 0; i < mindMap.getChildren().size(); i++) {
             moveToMenu(tag, noteId, title, mindMap.getChildren().get(i));
-        }
-    }
-
-    private void increment(String field, String noteId) {
-        if (redisTemplate.opsForHash().hasKey(field, noteId)) {
-            redisTemplate.opsForHash().increment(field, noteId, 1);
-        } else {
-            redisTemplate.opsForHash().put(field, noteId, "0");
         }
     }
 }

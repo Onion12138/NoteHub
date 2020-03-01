@@ -1,4 +1,4 @@
-package com.ecnu.onion.vo;
+package com.ecnu.onion.domain;
 
 import lombok.Data;
 

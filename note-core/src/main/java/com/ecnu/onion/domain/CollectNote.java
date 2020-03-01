@@ -10,7 +10,7 @@ import lombok.Data;
 public class CollectNote {
     private String noteId;
     private String tag;
-    private String title;
+    private String description;
     @Override
     public boolean equals(Object o){
         if (o instanceof CollectNote) {
@@ -22,6 +22,6 @@ public class CollectNote {
     };
     @Override
     public int hashCode() {
-        return Integer.parseInt(noteId);
+        return noteId.hashCode();
     }
 }

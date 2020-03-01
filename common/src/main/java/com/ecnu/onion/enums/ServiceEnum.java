@@ -21,7 +21,7 @@ public enum ServiceEnum {
     ACCOUNT_NOT_LOGIN(19, "请您登录"),
     NOTE_NOT_EXIST(31, "笔记不存在"),
     NOTE_DELETED(32, "笔记被删除"),
-    REPEAT_OPERATION(33, "十分钟内不要重复操作"),
+    NOTE_ILLEGAL(33, "笔记非法"),
     GROUP_CREATE_ERROR(51, "小组至少2个人"),
     WRONG_CODE(52, "验证码错误"),
     PAGE_OVERFLOW(41, "非法的页数")

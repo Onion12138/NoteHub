@@ -2,7 +2,6 @@ package com.ecnu.onion.api;
 
 import com.ecnu.onion.vo.BaseResponseVO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -13,16 +12,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(value = "graph-recommendation")
 public interface GraphAPI {
 
-    @GetMapping("/user/forkNote")
+    @PostMapping("/user/forkNote")
     BaseResponseVO addForkRelation(@RequestParam String email, @RequestParam String noteId);
 
-    @GetMapping("/user/viewNote")
+    @PostMapping("/user/viewNote")
     BaseResponseVO addViewRelation(@RequestParam String email, @RequestParam String noteId);
 
-    @GetMapping("/user/starNote")
+    @PostMapping("/user/starNote")
     BaseResponseVO addStarRelation(@RequestParam String email, @RequestParam String noteId);
 
-    @GetMapping("/user/hateNote")
+    @PostMapping("/user/hateNote")
     BaseResponseVO addHateRelation(@RequestParam String email, @RequestParam String noteId);
 
     @PostMapping("/user/collectNote")

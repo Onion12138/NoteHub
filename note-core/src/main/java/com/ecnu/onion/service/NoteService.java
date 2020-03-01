@@ -1,8 +1,8 @@
 package com.ecnu.onion.service;
 
 import com.ecnu.onion.domain.Comment;
+import com.ecnu.onion.domain.mongo.Note;
 import com.ecnu.onion.vo.AnalysisVO;
-import com.ecnu.onion.vo.NoteResponseVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -15,11 +15,11 @@ public interface NoteService {
 
     String publishNote(AnalysisVO analyze, Map<String, String> map);
 
-    int updateNote(AnalysisVO analyze, Map<String, String> map);
+    void updateNote(AnalysisVO analyze, Map<String, String> map);
 
     void deleteNote(String noteId);
 
-    NoteResponseVO findOneNote(String email, String noteId);
+    Note findOneNote(String email, String noteId);
 
     void changeAuthority(String noteId, String authority);
 
@@ -30,4 +30,6 @@ public interface NoteService {
     void deleteComment(String noteId, String commentId);
 
     String uploadPicture(String noteId, MultipartFile file);
+
+    Map<Object, Object> getCounter(String noteId);
 }

@@ -1,19 +1,17 @@
 package com.ecnu.onion.controller;
 
-import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.utils.AuthUtil;
-import com.ecnu.onion.vo.BaseResponseVO;
-import com.ecnu.onion.vo.LoginVO;
-import com.ecnu.onion.vo.ModificationVO;
-import com.ecnu.onion.vo.RegisterVO;
+import com.ecnu.onion.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,8 +24,6 @@ import java.util.Set;
 public class UserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private TagDao tagDao;
 
     @PostMapping("/register")
     public BaseResponseVO register(@RequestBody RegisterVO registerVO) {
@@ -58,6 +54,13 @@ public class UserController {
     public BaseResponseVO modifyPassword(@RequestBody ModificationVO modificationVO) {
         String email = AuthUtil.getEmail();
         userService.modifyPassword(email, modificationVO);
+        return BaseResponseVO.success();
+    }
+
+    @PostMapping("/modifyUsername")
+    public BaseResponseVO modifyUsername(@RequestParam String username) {
+        String email = AuthUtil.getEmail();
+        userService.modifyUsername(email, username);
         return BaseResponseVO.success();
     }
 
@@ -109,5 +112,17 @@ public class UserController {
         String email = AuthUtil.getEmail();
         userService.deleteIndex(email, num);
         return BaseResponseVO.success();
+    }
+
+    @GetMapping("/findUser")
+    public BaseResponseVO findUser(@RequestParam String email) {
+        UserVO userVO = userService.findUser(email);
+        return BaseResponseVO.success(userVO);
+    }
+
+    @GetMapping("/findTag")
+    public BaseResponseVO findTag() {
+        List<Tag> tagList = userService.findTag();
+        return BaseResponseVO.success(tagList);
     }
 }

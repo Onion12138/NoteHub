@@ -2,11 +2,14 @@ package com.ecnu.onion.service;
 
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.vo.LoginVO;
 import com.ecnu.onion.vo.ModificationVO;
 import com.ecnu.onion.vo.RegisterVO;
+import com.ecnu.onion.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +39,13 @@ public interface UserService {
 
     void updateIndex(String email, Map<String, String> map);
 
-    MindMap findOneIndex(String email, Integer num);
+    MindMap findOneIndex(String email, int num);
 
-    void deleteIndex(String email, Integer num);
+    void deleteIndex(String email, int num);
+
+    void modifyUsername(String email, String username);
+
+    UserVO findUser(String email);
+
+    List<Tag> findTag();
 }

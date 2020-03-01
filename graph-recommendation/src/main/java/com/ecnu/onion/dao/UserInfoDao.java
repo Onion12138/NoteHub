@@ -59,7 +59,7 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
             "delete f ")
     void cancelFollowRelation(String followerEmail, String followedEmail);
 
-    @Query("match (u:user)-[r:star|hate|collect]->(n:note)" +
+    @Query("match (u:user)-[r:star|hate]->(n:note)" +
             "where u.email = {0} and n.noteId = {1} " +
             "return type(r)")
     List<String> checkRelation(String email, String noteId);

@@ -15,7 +15,6 @@ import com.ecnu.onion.utils.DownloadUtil;
 import com.ecnu.onion.utils.KeyUtil;
 import com.ecnu.onion.utils.UuidUtil;
 import com.ecnu.onion.vo.AnalysisVO;
-import com.ecnu.onion.vo.NoteResponseVO;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
@@ -41,8 +40,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -98,6 +99,9 @@ public class NoteServiceImpl implements NoteService {
     * */
     @Override
     public String publishNote(AnalysisVO analyze, Map<String, String> map) {
+        if (analyze.getCode() != 0) {
+            throw new CommonServiceException(ServiceEnum.NOTE_ILLEGAL);
+        }
         String id = KeyUtil.getUniqueKey();
         Note note = Note.builder()
                 .id(id)
@@ -106,40 +110,47 @@ public class NoteServiceImpl implements NoteService {
                 .authority("write".equals(map.get("authority")))
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
-                .forkFrom("")
                 .tag(map.get("tag"))
                 .keywords(analyze.getKeywords())
                 .titles(analyze.getTitles())
-                .levelTitle(analyze.getLevelTitles().toString())
+                .levelTitle(analyze.getLevelTitles())
                 .summary(analyze.getSummary())
                 .content(map.get("content"))
-                .stars(0).views(0).hates(0).forks(0).collects(0).valid(true)
+                .valid(true)
                 .comments(new ArrayList<>())
                 .build();
         String forkFrom = map.get("forkFrom");
         if (forkFrom != null) {
             note.setForkFrom(forkFrom);
-            increment("fork", forkFrom);
+            redisTemplate.opsForHash().increment(forkFrom, "fork", 1);
         }
         noteDao.save(note);
+        String[] fields = {"star","hate","view","collect","fork"};
+        for (String field: fields) {
+            redisTemplate.opsForHash().put(id, field, 0);
+        }
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.GRAPH_NOTE_QUEUE, asGraphJson(note));
         return id;
     }
 
     @Override
-    public int updateNote(AnalysisVO analyze, Map<String, String> map) {
-//        String id = map.get("id");
-//        Note note = findById(id);
-//        note.setVersion(version);
-//        note.getContent().add(map.get("content"));
-//        note.getSummary().add(analyze.getSummary());
-////        note.getTitleString().add(analyze.getTitles());
-//        note.getLevelTitle().add(analyze.getLevelTitles());
-//        note.getTitles().add(analyze.getTitles());
-//        noteDao.save(note);
-//        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
-        return 0;
+    public void updateNote(AnalysisVO analyze, Map<String, String> map) {
+        if (analyze.getCode() != 0) {
+            throw new CommonServiceException(ServiceEnum.NOTE_ILLEGAL);
+        }
+        String id = map.get("id");
+        Note note = findById(id);
+        note.setDescription(map.get("description"));
+        note.setContent(map.get("content"));
+        note.setUpdateTime(LocalDateTime.now());
+
+        note.setSummary(analyze.getSummary());
+        note.setTitles(analyze.getTitles());
+        note.setLevelTitle(analyze.getLevelTitles());
+        note.setKeywords(analyze.getKeywords());
+        noteDao.save(note);
+        rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
     }
 
     @Override
@@ -148,29 +159,14 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public NoteResponseVO findOneNote(String email, String noteId) {
+    public Note findOneNote(String email, String noteId) {
         Note note = findById(noteId);
         if (!note.getValid()) {
             throw new CommonServiceException(ServiceEnum.NOTE_DELETED);
         }
-        increment("view", noteId);
+        redisTemplate.opsForHash().increment(noteId,"view",1);
         graphAPI.addViewRelation(email, noteId);
-        return NoteResponseVO.builder()
-                .id(noteId)
-                .authorEmail(note.getAuthorEmail())
-//                .authorName(note.getAuthorName())
-                .authority(note.getAuthority())
-//                .title(note.getTitle())
-//                .content(note.getContent().get(version))
-                .forkFrom(note.getForkFrom())
-//                .createTime(note.getCreateTime().get(version))
-                .comments(note.getComments())
-                .stars(note.getStars())
-                .hates(note.getHates())
-                .forks(note.getForks())
-                .collects(note.getCollects())
-                .views(note.getViews())
-                .build();
+        return note;
     }
 
 
@@ -186,16 +182,18 @@ public class NoteServiceImpl implements NoteService {
             throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
         }
         Note note = optional.get();
-        String commentId = KeyUtil.getUniqueKey();
+        String commentId = UuidUtil.getUuid();
         comment.setCommentId(commentId);
         List<Comment> commentList = note.getComments();
         if (StringUtils.isEmpty(comment.getReplyTo())){
             commentList.add(comment);
+            note.setComments(commentList);
+            noteDao.save(note);
             return commentId;
         }
         int i;
         for (i = 0; i < commentList.size() - 1; i++) {
-            if (commentList.get(i).getCommentId().equals(comment.getCommentId())) {
+            if (commentList.get(i).getCommentId().equals(comment.getReplyTo())) {
                 break;
             }
         }
@@ -207,11 +205,7 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public void starOrHate(String type, String noteId, String email) {
-        if (redisTemplate.opsForValue().get(type + noteId + email) != null) {
-            throw new CommonServiceException(ServiceEnum.REPEAT_OPERATION);
-        }
-        redisTemplate.opsForValue().set(type + noteId + email, type, 10, TimeUnit.MINUTES);
-        increment(type, noteId);
+        redisTemplate.opsForHash().increment(noteId, type, 1);
         if ("star".equals(type)) {
             graphAPI.addStarRelation(email, noteId);
         }
@@ -256,6 +250,11 @@ public class NoteServiceImpl implements NoteService {
         return DownloadUtil.getFileUrl(key, accessKey, secretKey, expireInSeconds);
     }
 
+    @Override
+    public Map<Object, Object> getCounter(String noteId) {
+        return redisTemplate.opsForHash().entries(noteId);
+    }
+
     private String asGraphJson(Note note) {
         NoteInfo noteInfo = NoteInfo.builder()
                 .publishTime(LocalDate.now().toString())
@@ -269,7 +268,8 @@ public class NoteServiceImpl implements NoteService {
         NoteSearch noteSearch = NoteSearch.builder()
                 .id(note.getId())
                 .email(note.getAuthorEmail())
-                .keywords(note.getKeywords() + "," + note.getTitles())
+                .keywords(note.getKeywords())
+                .titles(note.getTitles())
                 .summary(note.getSummary())
                 .description(note.getDescription())
                 .tag(note.getTag())
@@ -294,11 +294,4 @@ public class NoteServiceImpl implements NoteService {
         return optional.get();
     }
 
-    private void increment(String field, String noteId) {
-        if (redisTemplate.opsForHash().hasKey(field, noteId)) {
-            redisTemplate.opsForHash().increment(field, noteId, 1);
-        } else {
-            redisTemplate.opsForHash().put(field, noteId, "0");
-        }
-    }
 }

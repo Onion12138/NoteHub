@@ -1,5 +1,6 @@
 package com.ecnu.onion.vo;
 
+import com.ecnu.onion.domain.Title;
 import lombok.Data;
 
 /**
@@ -8,6 +9,7 @@ import lombok.Data;
  */
 @Data
 public class AnalysisVO {
+    private int code;
     private String summary;
     private String keywords;
     private String titles;

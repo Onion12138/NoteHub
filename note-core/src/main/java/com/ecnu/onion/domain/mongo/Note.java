@@ -1,6 +1,7 @@
 package com.ecnu.onion.domain.mongo;
 
 import com.ecnu.onion.domain.Comment;
+import com.ecnu.onion.domain.Title;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -29,14 +30,9 @@ public class Note implements Serializable {
     private String tag;
     private String keywords;
     private String titles;
-    private String levelTitle;
+    private Title levelTitle;
     private String summary;
     private String content;
-    private Integer stars;
-    private Integer views;
-    private Integer hates;
-    private Integer forks;
-    private Integer collects;
     private Boolean valid;
     private List<Comment> comments;
 

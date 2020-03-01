@@ -21,7 +21,7 @@ public class Md5Util {
     }
 
     private static String encodeHex(byte[] bytes) {
-        StringBuffer buffer = new StringBuffer(bytes.length * 2);
+        StringBuilder buffer = new StringBuilder(bytes.length * 2);
         for (int i = 0; i < bytes.length; i++) {
             if (((int) bytes[i] & 0xff) < 0x10) {
                 buffer.append("0");
