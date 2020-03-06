@@ -11,7 +11,6 @@ import java.util.List;
  */
 @Data
 public class Title implements Serializable {
-    private int level;
-    private String value;
+    private String label;
     private List<Title> children;
 }

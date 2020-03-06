@@ -48,4 +48,8 @@ public interface UserService {
     UserVO findUser(String email);
 
     List<Tag> findTag();
+
+//    void mindMap(String email);
+//
+//    Collection findMindMap(String email);
 }

@@ -1,5 +1,6 @@
 package com.ecnu.onion.controller;
 
+import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
 import com.ecnu.onion.domain.mongo.Tag;
@@ -10,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author onion
@@ -25,6 +23,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TagDao tagDao;
     @PostMapping("/register")
     public BaseResponseVO register(@RequestBody RegisterVO registerVO) {
         userService.register(registerVO);
@@ -72,9 +72,8 @@ public class UserController {
     }
 
     @PostMapping("/chooseTags")
-    public BaseResponseVO chooseTags(@RequestParam String tagStr) {
-        String email = AuthUtil.getEmail();
-        Set<String> tags = new HashSet<>(Set.of(tagStr.split(" ")));
+    public BaseResponseVO chooseTags(@RequestParam String email, @RequestParam String tagStr) {
+        Set<String> tags = new HashSet<>(Set.of(tagStr.split(",")));
         userService.chooseTags(email, tags);
         return BaseResponseVO.success();
     }
@@ -125,4 +124,43 @@ public class UserController {
         List<Tag> tagList = userService.findTag();
         return BaseResponseVO.success(tagList);
     }
+
+//    @GetMapping("/findMindMap")
+//    public BaseResponseVO findMindMap() {
+//        String email = AuthUtil.getEmail();
+//        Collection collection = userService.findMindMap(email);
+//        return BaseResponseVO.success(collection);
+//    }
+//    @GetMapping("/insertDefaultMap")
+//    public BaseResponseVO map(@RequestParam String email) {
+//        userService.mindMap(email);
+//        return BaseResponseVO.success();
+//    }
+
+//    @GetMapping("/insertTag")
+//    public BaseResponseVO insertTag() {
+//        String[] tagStr = {"人工智能","前端开发","后端开发","移动开发","测试运维","大数据","数学","学科基础","编程语言","其他"};
+//        String[] level = {"机器学习 深度学习 计算机视觉 自然语言处理",
+//                "前端框架 Html/css 前端工具",
+//                "Spring全家桶 微服务 Python框架 关系数据库 NoSQL 分布式 后端工具",
+//                "iOS开发 安卓开发 微信小程序",
+//                "Linux 软件测试 虚拟化技术 服务器",
+//                "云计算 数据挖掘 大数据框架 数学建模",
+//                "高等数学 线性代数 离散数学 概率论与数理统计 凸优化",
+//                "操作系统 计算机网络 计算机组成 数据库原理 编译原理 数据结构 算法 面向对象分析与设计",
+//                "Java Python C C++ Javascript 其他语言",
+//                "分类太渣 想自定义"
+//        };
+//        for (int i = 0; i < tagStr.length; i++) {
+//            Tag tag = new Tag(tagStr[i], i, true);
+//            String[] sub = level[i].split(" ");
+//            for (int j = 0; j < sub.length; j++) {
+//                tag.addChildren(new Tag(sub[j], (i+1)*12+j, false));
+//            }
+//            tagDao.save(tag);
+//        }
+//        return BaseResponseVO.success();
+//    }
+
 }
+

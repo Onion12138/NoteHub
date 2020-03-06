@@ -13,27 +13,22 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class MindMap {
-    private boolean leaf;
     private List<MindMap> children;
-    private String id;
-    private String noteId;
+    private String label;
+    private String value;
 
-    public MindMap(String id) {
-        this.id = id;
+    public MindMap(String label) {
+        this.label = label;
+        this.value = label;
         children = new ArrayList<>();
-        leaf = false;
     }
 
-    public MindMap(String id, String noteId) {
-        this.id = id;
-        this.noteId = noteId;
-        leaf = true;
+    public MindMap(String label, String value) {
+        this.label = label;
+        this.value = value;
     }
 
     public void addComponent(MindMap component) {
-        if (leaf) {
-            throw new RuntimeException("不是目录");
-        }
         children.add(component);
     }
 }
