@@ -44,12 +44,12 @@ public class JwtFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-//        RequestContext context = RequestContext.getCurrentContext();
-//        for (String url : path) {
-//            if (matcher.match(url, context.getRequest().getRequestURI())) {
-//                return false;
-//            }
-//        }
+        RequestContext context = RequestContext.getCurrentContext();
+        for (String url : path) {
+            if (matcher.match(url, context.getRequest().getRequestURI())) {
+                return false;
+            }
+        }
         return false;
     }
 

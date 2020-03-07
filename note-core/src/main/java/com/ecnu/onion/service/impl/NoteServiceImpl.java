@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.ecnu.onion.api.GraphAPI;
 import com.ecnu.onion.constant.MQConstant;
 import com.ecnu.onion.dao.NoteDao;
+import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.domain.graph.NoteInfo;
 import com.ecnu.onion.domain.mongo.Note;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.domain.search.NoteSearch;
 import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
@@ -26,6 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,8 +44,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author onion
@@ -58,6 +66,8 @@ public class NoteServiceImpl implements NoteService {
     private GraphAPI graphAPI;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private TagDao tagDao;
 
     @Value("${qiniu.access-key}")
     private String accessKey;
@@ -79,13 +89,12 @@ public class NoteServiceImpl implements NoteService {
                 .id(id)
                 .authorEmail(email)
                 .description(map.get("description"))
-                .authority("write".equals(map.get("authority")))
+                .authority(map.get("authority").equals("true"))
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .tag(map.get("tag"))
                 .keywords(analyze.getKeywords())
-                .titles(analyze.getTitles())
-                .levelTitle(analyze.getLevelTitles())
+                .titleTree(analyze.getTitleTree())
                 .summary(analyze.getSummary())
                 .content(map.get("content"))
                 .valid(true)
@@ -117,8 +126,7 @@ public class NoteServiceImpl implements NoteService {
         note.setUpdateTime(LocalDateTime.now());
 
         note.setSummary(analyze.getSummary());
-        note.setTitles(analyze.getTitles());
-        note.setLevelTitle(analyze.getLevelTitles());
+        note.setTitleTree(analyze.getTitleTree());
         note.setKeywords(analyze.getKeywords());
         noteDao.save(note);
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.SEARCH_NOTE_QUEUE, asSearchJson(note));
@@ -228,6 +236,29 @@ public class NoteServiceImpl implements NoteService {
         return redisTemplate.opsForHash().entries(noteId);
     }
 
+    @Override
+    public List<Note> findAll() {
+        return noteDao.findAll();
+    }
+
+    @Override
+    public Page<Note> findByTag(String tag, Integer page) {
+        Sort sort = Sort.by("updateTime");
+        Pageable pageable = PageRequest.of(page - 1, 10, sort);
+        return noteDao.findByTagLike(tag, pageable);
+    }
+
+    @Override
+    public List<String> findSubTag(String tag) {
+        Tag tag1 = tagDao.findByValue(tag);
+        return tag1.getChildren().stream().map(Tag::getValue).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Tag> findTag() {
+        return tagDao.findAll();
+    }
+
     private String asGraphJson(Note note) {
         NoteInfo noteInfo = NoteInfo.builder()
                 .publishTime(LocalDate.now().toString())
@@ -242,7 +273,6 @@ public class NoteServiceImpl implements NoteService {
                 .id(note.getId())
                 .email(note.getAuthorEmail())
                 .keywords(note.getKeywords())
-                .titles(note.getTitles())
                 .summary(note.getSummary())
                 .description(note.getDescription())
                 .tag(note.getTag())

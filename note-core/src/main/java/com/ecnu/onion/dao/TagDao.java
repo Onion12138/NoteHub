@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface TagDao extends MongoRepository<Tag, Integer> {
+    Tag findByValue(String tag);
 }

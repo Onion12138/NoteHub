@@ -49,6 +49,8 @@ public interface UserService {
 
     List<Tag> findTag();
 
+    void addMindMap(String email, MindMap mindMap);
+
 //    void mindMap(String email);
 //
 //    Collection findMindMap(String email);

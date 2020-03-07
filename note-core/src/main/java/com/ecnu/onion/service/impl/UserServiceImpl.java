@@ -99,6 +99,7 @@ public class UserServiceImpl implements UserService {
         }
         String salt = SaltUtil.getSalt();
         String password = Md5Util.encrypt(registerVO.getPassword() + salt);
+        MindMap mindMap = generateDefaultMindMap();
         User user = User.builder()
                 .email(registerVO.getEmail())
                 .username(registerVO.getUsername())
@@ -107,10 +108,9 @@ public class UserServiceImpl implements UserService {
                 .salt(salt)
                 .profileUrl("https://avatars2.githubusercontent.com/u/33611404?s=400&v=4")
                 .disabled(false)
-                .interestedTags(new HashSet<>())
+                .interestedTags(registerVO.getChooseTags())
+                .mindMapList(Collections.singletonList(mindMap))
                 .build();
-        MindMap mindMap = generateDefaultMindMap();
-//        user.getCollectIndexes().add(mindMap);
         userDao.save(user);
         UserInfo userInfo = UserInfo.builder().email(user.getEmail())
                 .registerTime(LocalDate.now().toString()).build();
@@ -138,6 +138,7 @@ public class UserServiceImpl implements UserService {
         map.put("email",user.getEmail());
         map.put("username",user.getUsername());
         map.put("profileUrl",user.getProfileUrl());
+        map.put("mindMapList",user.getMindMapList());
 //        map.put("collectNotes", user.getCollectNotes());
 //        map.put("collectIndexes", user.getCollectIndexes());
         return map;
@@ -270,6 +271,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<Tag> findTag() {
         return tagDao.findAll();
+    }
+
+    @Override
+    public void addMindMap(String email, MindMap mindMap) {
+        User user = userDao.findById(email).get();
+        user.getMindMapList().add(mindMap);
+        userDao.save(user);
+//        Query query = Query.query(Criteria.where("_id").is(email));
+//        Update update = new Update();
+//        update.addToSet("mindMapList", mindMap);
+//        mongoTemplate.updateFirst(query, update, User.class);
     }
 //
 //    @Override

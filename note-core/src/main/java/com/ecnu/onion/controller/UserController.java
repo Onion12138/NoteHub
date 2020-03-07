@@ -1,17 +1,16 @@
 package com.ecnu.onion.controller;
 
-import com.ecnu.onion.dao.TagDao;
 import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
-import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.utils.AuthUtil;
 import com.ecnu.onion.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * @author onion
@@ -19,12 +18,11 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private TagDao tagDao;
     @PostMapping("/register")
     public BaseResponseVO register(@RequestBody RegisterVO registerVO) {
         userService.register(registerVO);
@@ -71,13 +69,6 @@ public class UserController {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/chooseTags")
-    public BaseResponseVO chooseTags(@RequestParam String email, @RequestParam String tagStr) {
-        Set<String> tags = new HashSet<>(Set.of(tagStr.split(",")));
-        userService.chooseTags(email, tags);
-        return BaseResponseVO.success();
-    }
-
     @PostMapping("/cancelCollectNote")
     public BaseResponseVO cancelCollectNote(@RequestParam String noteId) {
         String email = AuthUtil.getEmail();
@@ -89,6 +80,13 @@ public class UserController {
     public BaseResponseVO addIndex(@RequestParam String mindMap) {
         String email = AuthUtil.getEmail();
         userService.addIndex(email, mindMap);
+        return BaseResponseVO.success();
+    }
+    @PostMapping("/addMindMap")
+    public BaseResponseVO addMindMap(@RequestBody MindMap mindMap) {
+        String email = "969023014@qq.com";
+        log.info("email:{},mindMap:{}",email, mindMap);
+        userService.addMindMap(email, mindMap);
         return BaseResponseVO.success();
     }
 
@@ -119,11 +117,7 @@ public class UserController {
         return BaseResponseVO.success(userVO);
     }
 
-    @GetMapping("/findTag")
-    public BaseResponseVO findTag() {
-        List<Tag> tagList = userService.findTag();
-        return BaseResponseVO.success(tagList);
-    }
+
 
 //    @GetMapping("/findMindMap")
 //    public BaseResponseVO findMindMap() {

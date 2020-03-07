@@ -11,7 +11,6 @@ import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
@@ -33,34 +32,20 @@ public class NoteServiceImpl implements NoteService {
     private NoteDao noteDao;
 
     @Override
-    public Page<Note> findByAuthorEmail(String email, int page) {
-        Sort sort = Sort.by("updateTime");
-        return noteDao.findAllByEmail(email, PageRequest.of(page - 1, 10, sort));
-    }
-
-    @Override
     public Page<Note> findByKeyword(String keyword, int page) {
         HighlightBuilder highlightBuilder = new HighlightBuilder()
                 .field("summary")
                 .field("keywords")
-                .field("description")
-                .field("titles");
+                .field("description");
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(multiMatchQuery(keyword, "summary","keywords","description","titles")
                                 .field("description", 3.0f)
-                        .field("titles", 1.0f)
                         .field("summary",0.4f)
                         .field("keywords",0.2f)
                         .type(MultiMatchQueryBuilder.Type.MOST_FIELDS))
                 .withHighlightBuilder(highlightBuilder)
                 .withPageable(PageRequest.of(page - 1, 10 )).build();
         return noteDao.search(searchQuery);
-    }
-
-    @Override
-    public Page<Note> findByTag(String tag, int page) {
-        Sort sort = Sort.by("updateTime");
-        return noteDao.findAllByTag(tag, PageRequest.of(page - 1, 10, sort));
     }
 
     @RabbitHandler

@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import java.util.Set;
 
 /**
  * @author onion
@@ -20,4 +21,5 @@ public class RegisterVO {
     private String password;
     @Length(min = 6, max = 6, message = "请输入正确的验证码")
     private String code;
+    private Set<String> chooseTags;
 }

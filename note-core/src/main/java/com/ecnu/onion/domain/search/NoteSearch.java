@@ -17,6 +17,5 @@ public class NoteSearch {
     private String summary;
     private String keywords;
     private String description;
-    private String titles;
     private String tag;
 }

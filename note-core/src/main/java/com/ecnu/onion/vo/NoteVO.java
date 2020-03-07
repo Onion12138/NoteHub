@@ -1,23 +1,16 @@
-package com.ecnu.onion.domain.mongo;
+package com.ecnu.onion.vo;
 
 import com.ecnu.onion.domain.Title;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * @author onion
- * @date 2020/1/27 -8:30 上午
+ * @date 2020/3/7 -11:49 上午
  */
 @Data
-@Builder
-@Document(collection = "note")
-public class Note implements Serializable {
-    @Id
+public class NoteVO {
     private String id;
     private String authorEmail;
     private String description;
@@ -27,9 +20,7 @@ public class Note implements Serializable {
     private LocalDateTime updateTime;
     private String tag;
     private String keywords;
-    private Title titleTree;
+    private Title levelTitle;
     private String summary;
     private String content;
-    private Boolean valid;
-
 }

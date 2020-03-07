@@ -1,9 +1,12 @@
 package com.ecnu.onion.service;
 
 import com.ecnu.onion.domain.mongo.Note;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.vo.AnalysisVO;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,4 +30,12 @@ public interface NoteService {
     String uploadPicture(String noteId, MultipartFile file);
 
     Map<Object, Object> getCounter(String noteId);
+
+    List<Note> findAll();
+
+    Page<Note> findByTag(String tag, Integer page);
+
+    List<String> findSubTag(String tag);
+
+    List<Tag> findTag();
 }

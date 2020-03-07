@@ -1,12 +1,14 @@
 package com.ecnu.onion.controller;
 
 import com.ecnu.onion.domain.mongo.Note;
+import com.ecnu.onion.domain.mongo.Tag;
 import com.ecnu.onion.service.NoteService;
 import com.ecnu.onion.utils.AuthUtil;
 import com.ecnu.onion.vo.AnalysisVO;
 import com.ecnu.onion.vo.BaseResponseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,9 +48,11 @@ public class NoteController {
 
     @PostMapping("/publish")
     public BaseResponseVO publishNote(@RequestParam Map<String, String> map) {
+        String email = AuthUtil.getEmail();
         MultiValueMap<String,Object> re = new LinkedMultiValueMap<>();
         re.put("note", Collections.singletonList(map.get("content")));
         AnalysisVO analyze = restTemplate.postForObject("http://localhost:6000/analyze", re, AnalysisVO.class);
+        map.put("authorEmail",email);
         String id = noteService.publishNote(analyze, map);
         return BaseResponseVO.success(id);
     }
@@ -75,6 +80,7 @@ public class NoteController {
     @GetMapping("/findOne")
     public BaseResponseVO findNote(@RequestParam String noteId) {
         String email = AuthUtil.getEmail();
+//        String email = "969023014@qq.com";
         Note note = noteService.findOneNote(email, noteId);
         return BaseResponseVO.success(note);
     }
@@ -83,6 +89,30 @@ public class NoteController {
     public BaseResponseVO uploadPicture(@RequestParam String noteId, @RequestParam MultipartFile file) {
         String uri = noteService.uploadPicture(noteId, file);
         return BaseResponseVO.success(uri);
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponseVO recommend() {
+        List<Note> noteList = noteService.findAll();
+        return BaseResponseVO.success(noteList);
+    }
+
+    @GetMapping("/findByTag")
+    public BaseResponseVO findByTag(@RequestParam String tag, @RequestParam(defaultValue = "1") Integer page) {
+        Page<Note> notes = noteService.findByTag(tag, page);
+        return BaseResponseVO.success(notes);
+    }
+
+    @GetMapping("/findSubTag")
+    public BaseResponseVO findSubTag(@RequestParam String tag){
+        List<String> subtag = noteService.findSubTag(tag);
+        return BaseResponseVO.success(subtag);
+    }
+
+    @GetMapping("/findTag")
+    public BaseResponseVO findTag() {
+        List<Tag> tagList = noteService.findTag();
+        return BaseResponseVO.success(tagList);
     }
 
 }
