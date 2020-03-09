@@ -23,9 +23,12 @@ public class MindMap {
         children = new ArrayList<>();
     }
 
-    public MindMap(String label, String value) {
+    public MindMap(String label, String value, boolean hasChildren) {
         this.label = label;
         this.value = value;
+        if (hasChildren) {
+            children = new ArrayList<>();
+        }
     }
 
     public void addComponent(MindMap component) {

@@ -1,11 +1,13 @@
 package com.ecnu.onion.api;
 
 import com.ecnu.onion.vo.BaseResponseVO;
+import org.springframework.stereotype.Component;
 
 /**
  * @author onion
  * @date 2020/3/1 -3:31 下午
  */
+@Component
 public class GraphFallback implements GraphAPI {
     @Override
     public BaseResponseVO addForkRelation(String email, String noteId) {

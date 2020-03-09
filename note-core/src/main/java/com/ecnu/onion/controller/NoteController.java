@@ -77,10 +77,11 @@ public class NoteController {
         return BaseResponseVO.success();
     }
 
+
+
     @GetMapping("/findOne")
     public BaseResponseVO findNote(@RequestParam String noteId) {
         String email = AuthUtil.getEmail();
-//        String email = "969023014@qq.com";
         Note note = noteService.findOneNote(email, noteId);
         return BaseResponseVO.success(note);
     }
@@ -91,22 +92,10 @@ public class NoteController {
         return BaseResponseVO.success(uri);
     }
 
-    @GetMapping("/recommend")
-    public BaseResponseVO recommend() {
-        List<Note> noteList = noteService.findAll();
-        return BaseResponseVO.success(noteList);
-    }
-
     @GetMapping("/findByTag")
     public BaseResponseVO findByTag(@RequestParam String tag, @RequestParam(defaultValue = "1") Integer page) {
         Page<Note> notes = noteService.findByTag(tag, page);
         return BaseResponseVO.success(notes);
-    }
-
-    @GetMapping("/findSubTag")
-    public BaseResponseVO findSubTag(@RequestParam String tag){
-        List<String> subtag = noteService.findSubTag(tag);
-        return BaseResponseVO.success(subtag);
     }
 
     @GetMapping("/findTag")
@@ -114,5 +103,6 @@ public class NoteController {
         List<Tag> tagList = noteService.findTag();
         return BaseResponseVO.success(tagList);
     }
+
 
 }

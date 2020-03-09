@@ -1,5 +1,6 @@
 package com.ecnu.onion.domain.mongo;
 
+import com.ecnu.onion.domain.CollectNote;
 import com.ecnu.onion.domain.MindMap;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,6 @@ public class User {
     private Set<String> interestedTags;
     private String salt;
     private List<MindMap> mindMapList;
+    private MindMap collection;
+    private Set<CollectNote> collectNotes;
 }

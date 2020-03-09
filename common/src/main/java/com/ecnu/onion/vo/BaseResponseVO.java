@@ -1,6 +1,5 @@
 package com.ecnu.onion.vo;
 
-import com.ecnu.onion.excpetion.CommonServiceException;
 import lombok.Data;
 
 /**
@@ -9,13 +8,13 @@ import lombok.Data;
  */
 @Data
 public class BaseResponseVO {
-    private Integer code;   // 业务编号
-    private String message; // 异常信息
-    private Object data;         // 业务数据返回
+    private Integer code;
+    private String message;
+    private Object data;
 
     private BaseResponseVO(){}
 
-    public static<T> BaseResponseVO success(){
+    public static BaseResponseVO success(){
         BaseResponseVO response = new BaseResponseVO ();
         response.setCode(200);
         response.setMessage("success");
@@ -37,13 +36,9 @@ public class BaseResponseVO {
         response.setData(null);
         return response;
     }
-    public static BaseResponseVO serviceException(RuntimeException e){
+    public static BaseResponseVO serviceException(Exception e){
         BaseResponseVO response = new BaseResponseVO();
-        if (e instanceof CommonServiceException) {
-            response.setCode(((CommonServiceException)e).getCode());
-        } else {
-            response.setCode(-1);
-        }
+        response.setCode(-1);
         response.setMessage(e.getMessage());
         return response;
     }

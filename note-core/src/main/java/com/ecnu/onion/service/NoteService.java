@@ -31,11 +31,8 @@ public interface NoteService {
 
     Map<Object, Object> getCounter(String noteId);
 
-    List<Note> findAll();
-
     Page<Note> findByTag(String tag, Integer page);
 
-    List<String> findSubTag(String tag);
-
     List<Tag> findTag();
+
 }

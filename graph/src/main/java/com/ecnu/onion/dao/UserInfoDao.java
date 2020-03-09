@@ -26,12 +26,16 @@ public interface UserInfoDao extends Neo4jRepository<UserInfo, String> {
 
     @Query("match (u:user),(n:note)" +
             "where u.email = {0} and n.noteId = {1} " +
-            "merge (u)-[s:star {starDate:{2}}]->(n)")
+            "merge (u)-[s:star {starDate:{2}}]->(n) " +
+            "on create set s.times = 1 " +
+            "on match set s.times = s.times + 1")
     void addStarRelation(String email, String noteId, String starDate);
 
     @Query("match (u:user),(n:note)" +
             "where u.email = {0} and n.noteId = {1} " +
-            "merge (u)-[h:hate {hateDate:{2}}]->(n)")
+            "merge (u)-[h:hate {hateDate:{2}}]->(n) " +
+            "on create set s.times = 1 " +
+            "on match set s.times = s.times + 1")
     void addHateRelation(String email, String noteId, String hateDate);
 
     @Query("match (u:user),(n:note)" +

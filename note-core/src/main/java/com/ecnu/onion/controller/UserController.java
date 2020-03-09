@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,6 +63,13 @@ public class UserController {
         return BaseResponseVO.success();
     }
 
+    @GetMapping("/getCollection")
+    public BaseResponseVO collection() {
+        String email = AuthUtil.getEmail();
+        MindMap mindMap = userService.getCollection(email);
+        return BaseResponseVO.success(mindMap);
+    }
+
     @PostMapping("/collectNote")
     public BaseResponseVO collectNote(@RequestBody CollectNote collectNote){
         String email = AuthUtil.getEmail();
@@ -69,47 +77,27 @@ public class UserController {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/cancelCollectNote")
-    public BaseResponseVO cancelCollectNote(@RequestParam String noteId) {
+    @PostMapping("/mindMapNote")
+    public BaseResponseVO mindMapNote(@RequestBody CollectNote collectNote) {
         String email = AuthUtil.getEmail();
-        userService.cancelCollectNote(email, noteId);
+        userService.mindMapNote(email, collectNote);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/addIndex")
-    public BaseResponseVO addIndex(@RequestParam String mindMap) {
+    @GetMapping("/getMindMap")
+    public BaseResponseVO getMindMap() {
         String email = AuthUtil.getEmail();
-        userService.addIndex(email, mindMap);
-        return BaseResponseVO.success();
+        List<MindMap> mindMapList = userService.findMindMap(email);
+        return BaseResponseVO.success(mindMapList);
     }
+
     @PostMapping("/addMindMap")
     public BaseResponseVO addMindMap(@RequestBody MindMap mindMap) {
-        String email = "969023014@qq.com";
-        log.info("email:{},mindMap:{}",email, mindMap);
+        String email = AuthUtil.getEmail();
         userService.addMindMap(email, mindMap);
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/updateIndex")
-    public BaseResponseVO updateIndex(@RequestParam Map<String,String> map) {
-        String email = AuthUtil.getEmail();
-        userService.updateIndex(email, map);
-        return BaseResponseVO.success();
-    }
-
-    @GetMapping("/findOneIndex")
-    public BaseResponseVO findOneIndex(@RequestParam Integer num) {
-        String email = AuthUtil.getEmail();
-        MindMap mindMap = userService.findOneIndex(email, num);
-        return BaseResponseVO.success(mindMap);
-    }
-
-    @PostMapping("/deleteIndex")
-    public BaseResponseVO deleteIndex(@RequestParam Integer num) {
-        String email = AuthUtil.getEmail();
-        userService.deleteIndex(email, num);
-        return BaseResponseVO.success();
-    }
 
     @GetMapping("/findUser")
     public BaseResponseVO findUser(@RequestParam String email) {

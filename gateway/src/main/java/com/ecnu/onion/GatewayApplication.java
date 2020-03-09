@@ -2,17 +2,17 @@ package com.ecnu.onion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 /**
  * @author onion
  * @date 2020/1/27 -11:27 上午
  */
 
-@EnableZuulProxy
 @SpringBootApplication
-public class ZuulApplication {
+@EnableEurekaClient
+public class GatewayApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ZuulApplication.class, args);
+        SpringApplication.run(GatewayApplication.class, args);
     }
 }

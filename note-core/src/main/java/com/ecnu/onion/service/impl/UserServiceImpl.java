@@ -14,7 +14,10 @@ import com.ecnu.onion.enums.ServiceEnum;
 import com.ecnu.onion.excpetion.CommonServiceException;
 import com.ecnu.onion.service.UserService;
 import com.ecnu.onion.utils.*;
-import com.ecnu.onion.vo.*;
+import com.ecnu.onion.vo.LoginVO;
+import com.ecnu.onion.vo.ModificationVO;
+import com.ecnu.onion.vo.RegisterVO;
+import com.ecnu.onion.vo.UserVO;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
@@ -109,7 +112,9 @@ public class UserServiceImpl implements UserService {
                 .profileUrl("https://avatars2.githubusercontent.com/u/33611404?s=400&v=4")
                 .disabled(false)
                 .interestedTags(registerVO.getChooseTags())
-                .mindMapList(Collections.singletonList(mindMap))
+                .mindMapList(new ArrayList<>())
+                .collectNotes(new HashSet<>())
+                .collection(mindMap)
                 .build();
         userDao.save(user);
         UserInfo userInfo = UserInfo.builder().email(user.getEmail())
@@ -138,9 +143,6 @@ public class UserServiceImpl implements UserService {
         map.put("email",user.getEmail());
         map.put("username",user.getUsername());
         map.put("profileUrl",user.getProfileUrl());
-        map.put("mindMapList",user.getMindMapList());
-//        map.put("collectNotes", user.getCollectNotes());
-//        map.put("collectIndexes", user.getCollectIndexes());
         return map;
     }
 
@@ -200,59 +202,6 @@ public class UserServiceImpl implements UserService {
         rabbitTemplate.convertAndSend(MQConstant.EXCHANGE, MQConstant.MAIL_QUEUE, content);
     }
 
-
-    @Override
-    public void chooseTags(String email, Set<String> tags) {
-        Query query = Query.query(Criteria.where("_id").is(email));
-        Update update = new Update();
-        update.set("interestedTags", tags);
-        mongoTemplate.updateFirst(query, update, User.class);
-    }
-
-    @Override
-    public void cancelCollectNote(String email, String noteId) {
-//        User user = userDao.findById(email).get();
-//        List<MindMap> list = user.getCollectIndexes();
-//        for (MindMap map : list) {
-////            removeCollectNote(noteId, map);
-//        }
-//        user.setCollectIndexes(list);
-//        user.getCollectNotes().removeIf(e->noteId.equals(e.getNoteId()));
-//        userDao.save(user);
-    }
-
-    @Override
-    public void addIndex(String email, String mindMap) {
-        Query query = Query.query(Criteria.where("_id").is(email));
-        Update update = new Update();
-        update.addToSet("collectIndexes", JSON.parseObject(mindMap, MindMap.class));
-        mongoTemplate.updateFirst(query, update, User.class);
-    }
-
-    @Override
-    public void updateIndex(String email, Map<String, String> map) {
-        String mindMap = map.get("mindMap");
-        String num = map.get("num");
-        User user = userDao.findById(email).get();
-        MindMap newMindMap = JSON.parseObject(mindMap, MindMap.class);
-//        user.getCollectIndexes().set(Integer.parseInt(num), newMindMap);
-    }
-
-
-    @Override
-    public MindMap findOneIndex(String email, int num) {
-        User user = userDao.findById(email).get();
-        return null;
-//        return user.getCollectIndexes().get(num);
-    }
-
-    @Override
-    public void deleteIndex(String email, int num) {
-        User user = userDao.findById(email).get();
-//        user.getCollectIndexes().remove(num);
-        userDao.save(user);
-    }
-
     @Override
     public void modifyUsername(String email, String username) {
         Query query = Query.query(Criteria.where("_id").is(email));
@@ -262,71 +211,79 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserVO findUser(String email) {
-        User user = userDao.findById(email).get();
+        User user = getUser(email);
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
         return userVO;
     }
 
     @Override
-    public List<Tag> findTag() {
-        return tagDao.findAll();
+    public void addMindMap(String email, MindMap mindMap) {
+        User user = getUser(email);
+        user.getMindMapList().add(mindMap);
+        userDao.save(user);
     }
 
     @Override
-    public void addMindMap(String email, MindMap mindMap) {
-        User user = userDao.findById(email).get();
-        user.getMindMapList().add(mindMap);
-        userDao.save(user);
-//        Query query = Query.query(Criteria.where("_id").is(email));
-//        Update update = new Update();
-//        update.addToSet("mindMapList", mindMap);
-//        mongoTemplate.updateFirst(query, update, User.class);
+    public List<MindMap> findMindMap(String email) {
+        User user = getUser(email);
+        return user.getMindMapList();
     }
-//
-//    @Override
-//    public void mindMap(String email) {
-//        Collection collection = new Collection();
-//        collection.setEmail(email);
-//        collection.setId(UuidUtil.getUuid());
-//        collection.setMindMapList(Collections.singletonList(generateDefaultMindMap()));
-//        collectionDao.save(collection);
-//    }
-//
-//    @Override
-//    public Collection findMindMap(String email) {
-//        return collectionDao.findByEmail(email);
-//    }
+
+    @Override
+    public void mindMapNote(String email, CollectNote collectNote) {
+        User user = getUser(email);
+        user.getCollectNotes().add(collectNote);
+        List<MindMap> mindMapList = user.getMindMapList();
+        String[] path = collectNote.getTag();
+        MindMap current = mindMapList.stream().filter(e->e.getLabel().equals(path[0])).findFirst().get();
+        for (int i = 1; i < path.length; i++) {
+            List<MindMap> children = current.getChildren();
+            int finalI = i;
+            current = children.stream().filter(e->e.getLabel().equals(path[finalI])).findFirst().get();
+        }
+
+        current.addComponent(new MindMap(collectNote.getDescription(), collectNote.getNoteId(), true));
+
+        userDao.save(user);
+
+    }
+
+    @Override
+    public MindMap getCollection(String email) {
+        User user = getUser(email);
+        return user.getCollection();
+    }
 
     @Override
     public void collectNote(String email, CollectNote note) {
-        User user = userDao.findById(email).get();
-//        user.getCollectNotes().add(note);
-        String tag = note.getTag();
-//        moveToMenu(tag, note.getNoteId(), note.getDescription(), user.getCollectIndexes().get(0));
+        User user = getUser(email);
+        if (user.getCollectNotes().contains(note)) {
+            throw new CommonServiceException(-1,"已经收藏过此笔记");
+        }
+        user.getCollectNotes().add(note);
+        String[] tag = note.getTag();
+        String firstLevelTag = tag[0];
+        String secondLevelTag = tag[1];
+        MindMap mindMap = user.getCollection();
+        MindMap firstLevelMindMap = mindMap.getChildren().stream().
+                filter(e -> e.getLabel().equals(firstLevelTag)).findFirst().get();
+        MindMap secondLevelMindMap = firstLevelMindMap.getChildren().stream()
+                .filter(e -> e.getLabel().equals(secondLevelTag)).findFirst().get();
+        secondLevelMindMap.addComponent(new MindMap(note.getDescription(),note.getNoteId(),false));
         userDao.save(user);
         redisTemplate.opsForHash().increment(note.getNoteId(), "collect",1);
         graphAPI.addCollectRelation(email, note.getNoteId());
     }
 
-
-//    private void removeCollectNote(String noteId, MindMap composite) {
-//        if (composite.isLeaf()) {
-//            return;
-//        }
-//        List<MindMap> children = composite.getChildren();
-//        Iterator<MindMap> iterator = children.iterator();
-//        while (iterator.hasNext()) {
-//            MindMap child = iterator.next();
-//            if (child.isLeaf() && child.getNoteId().equals(noteId)) {
-//                iterator.remove();
-//            } else if (!child.isLeaf()) {
-//                removeCollectNote(noteId, child);
-//            }
-//        }
-//    }
-
-    public MindMap generateDefaultMindMap() {
+    private User getUser(String email) {
+        Optional<User> optional = userDao.findById(email);
+        if (optional.isEmpty()) {
+            throw new CommonServiceException(ServiceEnum.ACCOUNT_NOT_EXIST);
+        }
+        return optional.get();
+    }
+    private MindMap generateDefaultMindMap() {
         MindMap defaultMap = new MindMap("默认索引");
         List<Tag> tagList = tagDao.findAll();
         for (Tag tag : tagList) {
@@ -339,17 +296,4 @@ public class UserServiceImpl implements UserService {
         }
         return defaultMap;
     }
-
-//    private void moveToMenu(String tag, String noteId, String title, MindMap mindMap) {
-//        if (mindMap.isLeaf()) {
-//            return;
-//        }
-//        if (mindMap.getId().equals(tag)) {
-//            mindMap.addComponent(new MindMap(title, noteId));
-//            return;
-//        }
-//        for (int i = 0; i < mindMap.getChildren().size(); i++) {
-//            moveToMenu(tag, noteId, title, mindMap.getChildren().get(i));
-//        }
-//    }
 }

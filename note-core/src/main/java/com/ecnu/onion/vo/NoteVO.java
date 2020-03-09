@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Data
 public class NoteVO {
     private String id;
-    private String authorEmail;
     private String description;
     private Boolean authority;
     private String forkFrom;
@@ -23,4 +22,5 @@ public class NoteVO {
     private Title levelTitle;
     private String summary;
     private String content;
+    private UserVO user;
 }

@@ -19,7 +19,7 @@ public class CommonServiceException extends RuntimeException {
         this.message = message;
     }
     public CommonServiceException(ServiceEnum serviceEnum) {
-        this.code = serviceEnum.getCode();
+        this.code = -1;
         this.message = serviceEnum.getMessage();
     }
 }

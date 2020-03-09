@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author onion
  * @date 2020/1/30 -9:56 上午
  */
-@FeignClient(value = "graph")
+@FeignClient(value = "graph", fallback = GraphFallback.class)
 public interface GraphAPI {
 
     @PostMapping("/user/forkNote")

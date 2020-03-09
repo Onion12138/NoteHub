@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class CollectNote {
     private String noteId;
-    private String tag;
+    private String[] tag;
     private String description;
     @Override
     public boolean equals(Object o){

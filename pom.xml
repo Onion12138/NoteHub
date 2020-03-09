@@ -17,10 +17,10 @@
 
 	<modules>
 		<module>eureka-server</module>
-		<module>graph-recommendation</module>
+		<module>graph</module>
 		<module>note-core</module>
         <module>search</module>
-		<module>zuul</module>
+		<module>gateway</module>
     </modules>
 
 	<properties>

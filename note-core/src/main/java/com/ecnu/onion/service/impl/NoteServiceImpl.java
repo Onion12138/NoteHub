@@ -38,6 +38,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -47,7 +48,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author onion
@@ -85,6 +85,7 @@ public class NoteServiceImpl implements NoteService {
         }
         String id = KeyUtil.getUniqueKey();
         String email = map.get("authorEmail");
+        String forkFrom = map.get("forkFrom");
         Note note = Note.builder()
                 .id(id)
                 .authorEmail(email)
@@ -98,10 +99,9 @@ public class NoteServiceImpl implements NoteService {
                 .summary(analyze.getSummary())
                 .content(map.get("content"))
                 .valid(true)
+                .forkFrom(map.get("forkFrom"))
                 .build();
-        String forkFrom = map.get("forkFrom");
-        if (forkFrom != null) {
-            note.setForkFrom(forkFrom);
+        if (!StringUtils.isEmpty(forkFrom)) {
             redisTemplate.opsForHash().increment(forkFrom, "fork", 1);
         }
         noteDao.save(note);
@@ -124,7 +124,6 @@ public class NoteServiceImpl implements NoteService {
         note.setDescription(map.get("description"));
         note.setContent(map.get("content"));
         note.setUpdateTime(LocalDateTime.now());
-
         note.setSummary(analyze.getSummary());
         note.setTitleTree(analyze.getTitleTree());
         note.setKeywords(analyze.getKeywords());
@@ -154,35 +153,6 @@ public class NoteServiceImpl implements NoteService {
         updateField(noteId, "authority", "write".equals(authority));
     }
 
-//    @Override
-//    public String comment(CommentVO commentVO) {
-//        Optional<Note> optional = noteDao.findById(commentVO.getNoteId());
-//        if (optional.isEmpty()) {
-//            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
-//        }
-//        Note note = optional.get();
-//        String commentId = UuidUtil.getUuid();
-//        commentVO.setCommentId(commentId);
-//        List<Comment> commentList = note.getComments();
-//        Comment comment = new Comment();
-//        BeanUtils.copyProperties(commentVO, comment);
-//        if (StringUtils.isEmpty(commentVO.getParentCommentId())){
-//            commentList.add(comment);
-//            note.setComments(commentList);
-//            noteDao.save(note);
-//            return commentId;
-//        }
-//        int i;
-//        for (i = 0; i < commentList.size() - 1; i++) {
-//            if (commentList.get(i).getCommentId().equals(commentVO.getParentCommentId())) {
-//                break;
-//            }
-//        }
-//        commentList.add(i+1, comment);
-//        note.setComments(commentList);
-//        noteDao.save(note);
-//        return commentId;
-//    }
 
     @Override
     public void starOrHate(String type, String noteId, String email) {
@@ -194,20 +164,6 @@ public class NoteServiceImpl implements NoteService {
             graphAPI.addHateRelation(email, noteId);
         }
     }
-
-//    @Override
-//    public void deleteComment(String noteId, String commentId) {
-//        Optional<Note> optional = noteDao.findById(noteId);
-//        if (optional.isEmpty()) {
-//            throw new CommonServiceException(ServiceEnum.NOTE_NOT_EXIST);
-//        }
-//        Note note = optional.get();
-//        List<Comment> commentList = note.getComments();
-//        note.setComments(commentList.stream().filter
-//                (e-> !e.getCommentId().equals(commentId) && !commentId.equals(e.getParentCommentId()))
-//                .collect(Collectors.toList()));
-//        noteDao.save(note);
-//    }
 
     @Override
     public String uploadPicture(String noteId, MultipartFile file) {
@@ -236,22 +192,12 @@ public class NoteServiceImpl implements NoteService {
         return redisTemplate.opsForHash().entries(noteId);
     }
 
-    @Override
-    public List<Note> findAll() {
-        return noteDao.findAll();
-    }
 
     @Override
     public Page<Note> findByTag(String tag, Integer page) {
         Sort sort = Sort.by("updateTime");
         Pageable pageable = PageRequest.of(page - 1, 10, sort);
         return noteDao.findByTagLike(tag, pageable);
-    }
-
-    @Override
-    public List<String> findSubTag(String tag) {
-        Tag tag1 = tagDao.findByValue(tag);
-        return tag1.getChildren().stream().map(Tag::getValue).collect(Collectors.toList());
     }
 
     @Override
@@ -264,7 +210,6 @@ public class NoteServiceImpl implements NoteService {
                 .publishTime(LocalDate.now().toString())
                 .noteId(note.getId())
                 .build();
-        log.info("note:{}", JSON.toJSONString(noteInfo));
         return JSON.toJSONString(noteInfo);
     }
 
