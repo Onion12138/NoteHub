@@ -14,6 +14,6 @@ import java.util.List;
 @Repository
 public interface MessageDao extends MongoRepository<Message, String> {
 
-    List<Message> findAllByUserEmailAndIsDeleted(String userEmail, boolean isDeleted, Sort sort);
+    List<Message> findAllByReceiverEmailAndIsDeleted(String receiverEmail , boolean isDeleted, Sort sort);
 
 }

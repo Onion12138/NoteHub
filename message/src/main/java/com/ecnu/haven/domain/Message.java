@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * @author HavenTong
@@ -22,14 +23,27 @@ import java.time.LocalDateTime;
 public class Message implements Serializable {
     @Id
     private String messageId;
-    private String userEmail;
+    private String receiverEmail;
+    private String senderEmail;
     private MessageType type;
     private String content;
-    private String senderId;
-    private String senderName;
-    private Boolean isRead;
+    // changed
+    private Integer notRead;
     private Boolean isDeleted;
+
+    /**
+     * 和小组相关的消息，加入groupId
+     */
+    private String groupId;
+
+    /**
+     * 用于lookup
+     */
+    private String username;
+    private String profileUrl;
+    private Integer sum;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private LocalDateTime createdAt;
+
 }

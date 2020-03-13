@@ -15,15 +15,7 @@ public enum MessageType {
      */
     SHARE_NOTE,
     /**
-     * 被评论的消息
+     * 聊天
      */
-    COMMENT,
-    /**
-     * 评论回复的消息
-     */
-    COMMENT_REPLY,
-    /**
-     * 关注作者更新的消息
-     */
-    FOLLOW_UPDATE
+    CHAT
 }
