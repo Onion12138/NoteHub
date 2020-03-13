@@ -1,5 +1,6 @@
 package com.ecnu.haven.service;
 
+import com.ecnu.haven.vo.MessageListVO;
 import com.ecnu.haven.vo.MessageRequestVO;
 import com.ecnu.haven.vo.MessageResponseVO;
 
@@ -10,11 +11,25 @@ import java.util.List;
  * @date 2020/2/20 4:20 下午
  */
 public interface MessageService {
+
     /**
-     * 查看所有消息
-     * @return 用户的所有未删除消息
+     * 用户获取消息列表
+     * @return 返回消息列表，返回用户和所有联系人最近的一条消息, 按照时间降序排序，
      */
-    List<MessageResponseVO> findAllMessages();
+    List<MessageListVO> findMessageList();
+
+    /**
+     * 查看和某个联系人的历史消息
+     * @param senderEmail 联系人email
+     * @return 历史消息列表
+     */
+    List<MessageResponseVO> findHistoryChat(String senderEmail);
+
+    /**
+     * 将和某个联系人的消息全部标为已读
+     * @param senderEmail 发送
+     */
+    void clearUnreadMessage(String senderEmail);
 
     /**
      * 修改消息状态
@@ -53,10 +68,11 @@ public interface MessageService {
     void deleteAll();
 
     /**
-     * 推送并存储消息
-     * @param messageRequestVO 推送消息的必要信息, 见API文档
+     * 存储消息并推送给用户提示信息
+     * @param receiverEmail 接受者Email
+     * @param content 发送内容
      */
-    void post(MessageRequestVO messageRequestVO);
+    void sendMessage(String receiverEmail, String content);
 
     /**
      * 测试用方法，向表中插入一条消息

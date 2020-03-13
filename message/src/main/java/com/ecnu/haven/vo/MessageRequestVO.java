@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.Email;
 import java.util.List;
 
 /**
@@ -16,9 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MessageRequestVO {
-    private String senderId;
-    private String senderName;
-    private List<String> receiverEmails;
+    @Email
+    private String receiverEmail;
+
     private String content;
-    private MessageType type;
 }

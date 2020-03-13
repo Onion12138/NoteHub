@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Slf4j
 @Component
-@ServerEndpoint(value = "/websocket/{email}", encoders = {BaseResponseVOEncoder.class})
+@ServerEndpoint(value = "/websocket/{email}")
 public class WebSocket {
 
     private Session session;
@@ -51,10 +51,10 @@ public class WebSocket {
         log.info("message: {}", message);
     }
 
-    public void sendMessage(String email, BaseResponseVO message){
+    public void sendMessage(String email, String message){
         Session session = sessionPool.get(email);
         if (!Objects.isNull(session)) {
-            session.getAsyncRemote().sendObject(message);
+            session.getAsyncRemote().sendText(message);
         } else {
             log.info("email{} have no session", email);
         }

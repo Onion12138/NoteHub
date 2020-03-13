@@ -1,10 +1,13 @@
 package com.ecnu.haven.controller;
 
+import com.ecnu.haven.domain.Message;
 import com.ecnu.haven.service.MessageService;
+import com.ecnu.haven.vo.MessageListVO;
 import com.ecnu.haven.vo.MessageRequestVO;
 import com.ecnu.haven.vo.MessageResponseVO;
 import com.ecnu.onion.vo.BaseResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,10 +23,23 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    @GetMapping("/all")
-    public BaseResponseVO getAllMessages() {
-        List<MessageResponseVO> responseVOList = messageService.findAllMessages();
-        return BaseResponseVO.success(responseVOList);
+
+    @GetMapping("/list")
+    public BaseResponseVO findMessageList() {
+       List<MessageListVO> result = messageService.findMessageList();
+        return BaseResponseVO.success(result);
+    }
+
+    @GetMapping("/history")
+    public BaseResponseVO findHistoryChat(@RequestParam String senderEmail) {
+        List<MessageResponseVO> messages = messageService.findHistoryChat(senderEmail);
+        return BaseResponseVO.success(messages);
+    }
+
+    @PostMapping("/clear-unread")
+    public BaseResponseVO clearUnreadMessage(@RequestParam String senderEmail) {
+        messageService.clearUnreadMessage(senderEmail);
+        return BaseResponseVO.success();
     }
 
     @PostMapping("/status")
@@ -66,9 +82,15 @@ public class MessageController {
         return BaseResponseVO.success();
     }
 
-    @PostMapping("/post")
-    public BaseResponseVO post(@RequestBody MessageRequestVO messageRequest) {
-        messageService.post(messageRequest);
+
+    /**
+     * 发送信息并提示用户
+     * @param request 请求体参数，receiverEmail, content
+     * @return
+     */
+    @PostMapping("/send")
+    public BaseResponseVO sendMessage(@Validated @RequestBody MessageRequestVO request) {
+        messageService.sendMessage(request.getReceiverEmail(), request.getContent());
         return BaseResponseVO.success();
     }
 
