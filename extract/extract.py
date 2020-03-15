@@ -13,14 +13,14 @@ def analyze():
     level_titles, titles, content, keywords, summary = extract_title_content_keywords.do_extract(note)
     if judge_if_trash.predict(content) is False:
         return error()
-    data = {
-        "summary": summary,
-        "titles": titles,
-        "keywords": keywords,
-        "level_titles": level_titles,
-        "tags": ""  # to complete
-    }
-    return success(data)
+    # data = {
+    #     "summary": summary,
+    #     "titles": titles,
+    #     "keywords": keywords,
+    #     "title_tree": level_titles,
+    #     "tags": ""  # to complete
+    # }
+    return success(summary, keywords, level_titles)
 
 
 @app.route("/health")
@@ -31,11 +31,14 @@ def health():
     return jsonify(data)
 
 
-def success(data):
+def success(summary, keywords, level_titles):
     result = {
         "code": 0,
-        "msg": "success",
-        "data": data
+        # "msg": "success",
+        # "data": data
+        "summary": summary,
+        "keywords": keywords,
+        "title_tree": level_titles,
     }
     return jsonify(result)
 
@@ -43,7 +46,7 @@ def success(data):
 def error():
     result = {
         "code": -1,
-        "msg": "内容不存在或违规！"
+        # "msg": "内容不存在或违规！"
     }
     return jsonify(result)
 

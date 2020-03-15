@@ -1,7 +1,8 @@
 import os
 import numpy as np
 import operator
-
+import pymongo
+from py2neo import Graph,Node,Relationship
 
 def get_note_info(input_file):
     """
@@ -76,7 +77,7 @@ def get_avr_score(input_file):
 def get_train_data(input_file):
     """
     to get the train data for the LFM algorithm
-    :param input_file:user_id, note_id, star, hate, collect, view
+    :param input_file:user_id, note_id, star（0，1）, hate（0，1）, collect（0，1）, view
     :return:a list whose element is tuple
     """
     if not os.path.exists(input_file):
@@ -215,6 +216,22 @@ def get_rec_note_result(note_vec_dict, note_id):
         score = round(zuhe[1], 3)
         recommend_list.append((note_id, score))
     return recommend_list
+
+def update_file():
+    # client = pymongo.MongoClient(host='localhost', port=27017)
+    graph = Graph("http://localhost:7474", username="neo4j", password="neo4j")
+    # db = client.notehub
+    # notes = db.note
+    data = []
+    # for note in notes.find({}, {"id": 1, "authorEmail": 1, "alexa": 1}):
+    #     data.append(note)
+
+def do_rec():
+    train_data = get_train_data("behave.txt")
+    user_vec_dict, note_vec_dict = lfm_train(train_data, 2, 0.01, 0.1, 500)
+
+
+
 
 
 if __name__ == '__main__':

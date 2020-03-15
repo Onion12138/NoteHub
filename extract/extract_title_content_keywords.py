@@ -70,12 +70,15 @@ def construct_title(input):
         elif line.startswith("```"):
             found = 0
             continue
+        first = 0
         if found is 0:
             reg = "[^A-Za-z\u4e00-\u9fa5]"
             content += re.sub(reg, "", line) + '\n'
             if len(re.findall(r"^#+ (.*)", line)):
                 # print(line)
                 length = len(line.split(" ")[0])
+                if length is 1:
+                    first = first + 1
                 t = Menu(length, line[length+1:])
                 titles += line[length+1:] + ","
                 last[length] = t
@@ -84,14 +87,18 @@ def construct_title(input):
                     ll -= 1
                 last[ll].add_children(t)
                 continue
-
+        if first == 1:
+            head = head.children
     return head, content, titles[:len(titles)-1].strip()
 
 def do_extract_summarize(content):
     tr4s = TextRank4Sentence()
     tr4s.analyze(text=content, lower=True, source='no_stop_words')
-    key_sentences = tr4s.get_key_sentences(num=1, sentence_min_len=2)
-    return key_sentences.pop(0)['sentence']
+    key_sentences = tr4s.get_key_sentences(num=5, sentence_min_len=2)
+    key_stc = ""
+    for sentences in key_sentences:
+        key_stc = key_stc + sentences['sentence'] + " "
+    return key_stc.strip()
 
 
 def do_extract(input):
@@ -101,8 +108,8 @@ def do_extract(input):
 
 
 def do_extract_keywords(content):
-    tags = extract_tags(content, topK=20, withWeight=True)
-    rank = textrank(content, topK=20, withWeight=True)
+    tags = extract_tags(content, topK=10, withWeight=True)
+    rank = textrank(content, topK=10, withWeight=True)
     # 如果产生越界问题，抛出异常
     try:
         max_tag = tags[0][1]
