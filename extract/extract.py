@@ -38,7 +38,7 @@ def success(summary, keywords, level_titles):
         # "data": data
         "summary": summary,
         "keywords": keywords,
-        "title_tree": level_titles,
+        "titleTree": level_titles,
     }
     return jsonify(result)
 

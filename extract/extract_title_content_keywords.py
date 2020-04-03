@@ -59,7 +59,9 @@ def construct_title(input):
     content = ""
     last = {0: head}
     found = 0
+    first = 0
     titles = ""
+    contentWithSymbols = ""
     for line in input.split("\n"):
         line = line.strip()
         if line is '':
@@ -70,7 +72,7 @@ def construct_title(input):
         elif line.startswith("```"):
             found = 0
             continue
-        first = 0
+        contentWithSymbols += line
         if found is 0:
             reg = "[^A-Za-z\u4e00-\u9fa5]"
             content += re.sub(reg, "", line) + '\n'
@@ -87,9 +89,10 @@ def construct_title(input):
                     ll -= 1
                 last[ll].add_children(t)
                 continue
-        if first == 1:
-            head = head.children
-    return head, content, titles[:len(titles)-1].strip()
+    # if first == 1:
+    #     print("???")
+    #     head = head.children
+    return head, contentWithSymbols, titles[:len(titles)-1].strip()
 
 def do_extract_summarize(content):
     tr4s = TextRank4Sentence()
@@ -148,9 +151,11 @@ if __name__ == '__main__':
     f = open("test.txt")
     input = f.read()
     level_titles, titles, content, keywords, summary = do_extract(input)
-    print(level_titles)
-    print(titles)
+    print(content)
     print(keywords)
-    print(summary)
+    print(level_titles)
+    # print(titles)
+    # print(keywords)
+    # print(summary)
     # print( to_json_str(construct_title(level_titles)))
     # print(json.dumps(to_json_str(construct_title(level_titles)), ensure_ascii=False))
