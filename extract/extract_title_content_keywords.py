@@ -72,8 +72,8 @@ def construct_title(input):
         elif line.startswith("```"):
             found = 0
             continue
-        contentWithSymbols += line
         if found is 0:
+            contentWithSymbols += line
             reg = "[^A-Za-z\u4e00-\u9fa5]"
             content += re.sub(reg, "", line) + '\n'
             if len(re.findall(r"^#+ (.*)", line)):
