@@ -73,7 +73,8 @@ def construct_title(input):
             found = 0
             continue
         if found is 0:
-            contentWithSymbols += line
+            reg2 = "[^A-Za-z\u4e00-\u9fa5(\s)[,:;]]"
+            contentWithSymbols += re.sub(reg2, "", line) + '\n'
             reg = "[^A-Za-z\u4e00-\u9fa5]"
             content += re.sub(reg, "", line) + '\n'
             if len(re.findall(r"^#+ (.*)", line)):
@@ -92,7 +93,7 @@ def construct_title(input):
     # if first == 1:
     #     print("???")
     #     head = head.children
-    return head, contentWithSymbols, titles[:len(titles)-1].strip()
+    return head, content, contentWithSymbols, titles[:len(titles)-1].strip()
 
 def do_extract_summarize(content):
     tr4s = TextRank4Sentence()
@@ -105,9 +106,9 @@ def do_extract_summarize(content):
 
 
 def do_extract(input):
-    head, content, titles = construct_title(input)
+    head, content, contentWithSymbols, titles = construct_title(input)
     # level_titles = json.dumps(to_json_str(head), ensure_ascii=False)
-    return to_json_str(head), titles, content, do_extract_keywords(content), do_extract_summarize(content)
+    return to_json_str(head), titles, content, do_extract_keywords(content), do_extract_summarize(contentWithSymbols)
 
 
 def do_extract_keywords(content):
@@ -154,6 +155,7 @@ if __name__ == '__main__':
     print(content)
     print(keywords)
     print(level_titles)
+    print(summary)
     # print(titles)
     # print(keywords)
     # print(summary)
