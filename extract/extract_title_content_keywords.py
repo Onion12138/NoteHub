@@ -62,9 +62,11 @@ def construct_title(input):
     first = 0
     titles = ""
     contentWithSymbols = ""
+    skip = "^!\\[.*\\](.*)"
     for line in input.split("\n"):
         line = line.strip()
-        if line is '':
+        if line is '' or len(re.findall(skip, line)):
+            # print(line)
             continue
         if line.startswith("```") and found is 0:
             found = 1
